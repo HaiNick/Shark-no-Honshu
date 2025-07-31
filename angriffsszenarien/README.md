@@ -1,7 +1,25 @@
-# attack scenarios — real world exploitation chains
+# attack scenarios — get root, document how
 
-detailed analysis of current attacks and incident breakdowns.
+working exploitation chains for active engagement.
 
-{% content-ref url="https://app.gitbook.com/o/ondkO0WWqfINa0JrGK6C/s/UiiuJhdvMuvGWWWsVMfh/" %}
-[cyberanalysis](https://app.gitbook.com/o/ondkO0WWqfINa0JrGK6C/s/UiiuJhdvMuvGWWWsVMfh/)
-{% endcontent-ref %}
+## file upload attacks
+- `upload-vulnerability/` - bypass upload filters, deliver shells
+- get code execution through file upload endpoints
+- php, asp, jsp shells via extension/mime/content bypasses
+
+## web application attacks  
+- `webservices/sqli-sql-injection.md` - extract data, bypass auth
+- `webservices/command-injection.md` - execute system commands
+- `webservices/user-eingaben/xss-cross-site-scripting.md` - steal sessions, keylog
+- `webservices/user-eingaben/ssrf-server-side-request-forgery.md` - pivot internal networks
+- `webservices/user-eingaben/file-inclusion/` - read files, execute code
+
+## format
+each scenario contains:
+- purpose and outcome
+- working payloads 
+- bypass techniques
+- operational notes
+- [!] danger warnings
+
+speak like you just owned the box.
