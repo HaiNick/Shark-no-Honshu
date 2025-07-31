@@ -1,37 +1,52 @@
-# Cheat Sheets
+# cheat sheets for operators who need commands at 3am. example: copy/paste ready attack chains, no explanations, just working code
 
-<details>
+## core tool references
+- [curl](curl.md) - http requests with curl because wget sucks for apis
+- [git](git.md) - manage git repos with version control commands
+- [docker](docker.md) - run containers because vms are overkill
+- [kerberos](kerberos.md) - exploit kerberos authentication with ticket attacks
+- [telnet](telnet.md) - test network services because netcat isn't always installed
+- [windows-cmd](windows-cmd.md) - windows command line operations because powershell isn't always available
+- [linux-forensik](linux-forensik.md) - investigate linux systems for incident response
+- [privilege-escalation](privilege-escalation.md) - escalate privileges on compromised systems
+- [links](links.md) - reference links organized by category
 
-<summary>Links:</summary>
+## specialized references by category
 
-[https://www.whitehat.de/smb-enumeration-checkliste-cheat-sheet](https://www.whitehat.de/smb-enumeration-checkliste-cheat-sheet)
+### bash scripting and string manipulation
+- [bash/](bash/) - bash command references and string operations
+- [bash/manipulation-von-strings](bash/manipulation-von-strings.md) - extract, search, replace text
 
-[https://cheatsheet.haax.fr/network/services-enumeration/135\_rpc/](https://cheatsheet.haax.fr/network/services-enumeration/135_rpc/)
+### linux command references
+- [linux-cmd/](linux-cmd/) - linux system administration commands
+- [linux-cmd/zusatz](linux-cmd/zusatz.md) - additional linux utilities
 
-[https://nmap.org/book/nse-usage.html](https://nmap.org/book/nse-usage.html)
+### powershell operations
+- [powershell/](powershell/) - windows powershell command references
+- [powershell/system-netzwerkinformationen](powershell/system-netzwerkinformationen.md) - system and network info
+- [powershell/remoting-wsman-winrm](powershell/remoting-wsman-winrm.md) - remote powershell access
+- [powershell/filtering-sorting-per-pipe](powershell/filtering-sorting-per-pipe.md) - data processing
+- [powershell/scripting](powershell/scripting.md) - powershell automation
+- [powershell/echtzeitanalyse](powershell/echtzeitanalyse.md) - real-time analysis
 
-[https://hpc.ua.edu/wp-content/uploads/2022/02/Linux\_bash\_cheat\_sheet.pdf](https://hpc.ua.edu/wp-content/uploads/2022/02/Linux_bash_cheat_sheet.pdf)
+### assembly and reverse engineering
+- [assembler/](assembler/) - assembly language references
+- [assembler/x86-64-architektur](assembler/x86-64-architektur.md) - x86-64 instruction set
+- [reverseengineering/](reverseengineering/) - reverse engineering tools and techniques
 
-[https://devhints.io/bash](https://devhints.io/bash)
+## usage notes
+- all commands tested and working
+- copy/paste ready - no modification needed
+- warnings marked with [!] for dangerous operations
+- gotchas marked with (._.) for common mistakes
+- TODO sections show missing coverage areas
 
-[https://tldp.org/LDP/abs/html/comparison-ops.html](https://tldp.org/LDP/abs/html/comparison-ops.html)
-
-[https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Reverse%20Shell%20Cheatsheet.md](https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Reverse%20Shell%20Cheatsheet.md)
-
-[https://cheat.sh/](https://cheat.sh/)
-
-[https://github.com/Tib3rius/Pentest-Cheatsheets/blob/master/exploits/buffer-overflows.rst](https://github.com/Tib3rius/Pentest-Cheatsheets/blob/master/exploits/buffer-overflows.rst)
-
-[https://pequalsnp-team.github.io/cheatsheet/steganography-101](https://pequalsnp-team.github.io/cheatsheet/steganography-101)
-
-[https://download.microsoft.com/download/2/1/2/2122f0b9-0ee6-4e6d-bfd6-f9dcd27c07f9/ws12\_quickref\_download\_files/powershell\_langref\_v3.pdf](https://download.microsoft.com/download/2/1/2/2122f0b9-0ee6-4e6d-bfd6-f9dcd27c07f9/ws12_quickref_download_files/powershell_langref_v3.pdf)
-
-[https://drive.google.com/file/d/1VDJM0\_o64kfF5B7myyMaGSdH7yORHx7U/view](https://drive.google.com/file/d/1VDJM0_o64kfF5B7myyMaGSdH7yORHx7U/view)
-
-[https://www.sqltutorial.org/wp-content/uploads/2016/04/SQL-cheat-sheet.pdf](https://www.sqltutorial.org/wp-content/uploads/2016/04/SQL-cheat-sheet.pdf)
-
-[https://cheatsheetseries.owasp.org/cheatsheets/SQL\_Injection\_Prevention\_Cheat\_Sheet.html](https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html)
-
-[https://docs.docker.com/get-started/docker\_cheatsheet.pdf](https://docs.docker.com/get-started/docker_cheatsheet.pdf)
-
-</details>
+## style guide applied
+- lowercase unless proper names/commands need caps
+- no fluff, intros, or explanatory text beyond necessity  
+- blunt, clear, immediately usable
+- start each file with quick purpose line
+- flat command lists, tables, one-liners
+- treat as operator quick reference - not tutorials
+- dangerous commands marked plainly
+- ascii over emojis for warnings
