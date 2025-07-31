@@ -1,5 +1,18 @@
 ---
-description: Einschleusen von Systembefehlen
+description: inject system commands through user input
+---
+
+# command injection — when user input meets system()
+
+<details>
+
+<summary>Links:</summary>
+
+[https://github.com/payloadbox/command-injection-payload-list](https://github.com/payloadbox/command-injection-payload-list)
+
+</details>
+
+critical vulnerability where attackers inject arbitrary OS commands through manipulated parameters in URLs, forms, or HTTP requests. happens when user input is passed unfiltered to shell functions like `exec()`, `system()`, `passthru()`, `popen()`.: Einschleusen von Systembefehlen
 ---
 
 # Command Injection

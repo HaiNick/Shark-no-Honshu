@@ -1,8 +1,8 @@
 ---
-description: Skriptausführung im Browser des Nutzers
+description: execute javascript in victim browsers
 ---
 
-# XSS (Cross-Site Scripting)
+# XSS (cross-site scripting) — when user input becomes executable code
 
 **DOM-based XSS:**\
 JavaScript wird direkt im Browser über die HTML/DOM-Struktur ausgeführt, z. B. durch manipulierte `<script>`-Tags.

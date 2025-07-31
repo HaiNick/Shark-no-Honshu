@@ -1,43 +1,40 @@
-# Aktive Reconnaissance
+# active reconnaissance — directly poking the target
 
-Direktes Agieren mit dem Ziel.
+you're interacting with their systems now. expect logs and potentially alerts.
 
-Typische Aktivitäten sind:
+## typical activities
 
-* Verbindung zu Unternehmensservern testen ( HTTP, FTP, SMTP, ping, etc. )
-* Anrufe durchführen ( Social Engineering )
-* Betreten des Geländes/ Sicherheitsbereiche, etc. durch Ausgeben als Handwerker etc.
+* connecting to company servers (HTTP, FTP, SMTP, ping)
+* social engineering phone calls
+* physical reconnaissance (showing up as maintenance, delivery, etc.)
 
-## Ping ( ICMP )
+## ping (icmp)
 
-Verbindung zu Zieladresse testen
+test connectivity to target addresses
 
+```bash
+ping -c 4 target.com     # linux
+ping -n 4 target.com     # windows
 ```
-ping -c <ip> # Linux
-ping -n <ip> # Windows
+
+| flag | purpose |
+|------|---------|
+| -c (-n) | count of packets to send |
+| -s | packet size |
+
+[!] windows firewall blocks ICMP by default
+
+## telnet port testing
+
+communicate with any TCP service via command line
+
+```bash
+telnet target.com 80     # banner grab web server
+telnet target.com 25     # test SMTP
+telnet target.com 21     # test FTP
 ```
 
-| Parameter | Bedeutung                               |
-| --------- | --------------------------------------- |
-| -c (-n)   | count ( Anzahl zu versendender Pakete ) |
-| -s        | size ( Paketgröße pro Einzelpaket )     |
-|           |                                         |
-
-Microsoft Firewall blockiert ICMP per Default
-
-## Telnet:23 ( Teletype Network )
-
-Kommunikation mit Remote System via CLI (Command Line Interface).\
-Es kann mit jedem Service der mit TCP arbeitet kommuniziert werden.\
--> HTTP, FTP, SMTP, POP3, IMAP ( [protokolle-und-server](../informationen/protokolle-und-server/ "mention") )
-
-Daten werden in Cleartext versendet, auch Username/Password
-
-```
-telnet <ip> <port>
-
-z.B telnet 10.10.10.10 80  # Kommunikation mit Webserver ( Banner Grab )
-Trying 10.10.10.10...
+everything sent in cleartext including credentials. use for testing, not production.
 Connected to MACHINE_IP.
 Escape character is '^]'.
 GET / HTTP/1.1

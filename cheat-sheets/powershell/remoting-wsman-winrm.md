@@ -1,42 +1,31 @@
-# Remoting (WSMan / WinRM)
+# powershell remoting — remote shell the windows way
 
-{% hint style="info" %}
-PowerShell-Remoting erlaubt die interaktive oder skriptgesteuerte Verwaltung entfernter Computer. Es basiert auf dem Windows Remote Management (WinRM)-Protokoll und ist ab PowerShell 5.1 standardmäßig verfügbar. Administratorrechte erforderlich.
-{% endhint %}
+interactive or scripted management of remote windows systems via WinRM protocol. requires admin rights.
 
-### Übersicht
+## commands overview
 
-| Befehl              | Funktion                                                            |
-| ------------------- | ------------------------------------------------------------------- |
-| `Enable-PSRemoting` | Aktiviert PowerShell-Remoting auf dem lokalen Computer              |
-| `New-PSSession`     | Erstellt eine dauerhafte Sitzung zu einem Remote-Computer           |
-| `Enter-PSSession`   | Interaktive Live-Sitzung zu einem Zielsystem starten                |
-| `Invoke-Command`    | Führt Befehle oder Skripte auf einem oder mehreren Zielsystemen aus |
-| `Remove-PSSession`  | Beendet und entfernt bestehende Remoting-Sitzungen                  |
+| command | purpose |
+|---------|---------|
+| `Enable-PSRemoting` | enable PS remoting on local machine |
+| `New-PSSession` | create persistent session to remote computer |
+| `Enter-PSSession` | start interactive live session |
+| `Invoke-Command` | run commands/scripts on remote systems |
+| `Remove-PSSession` | terminate existing remoting sessions |
 
-***
-
-### 1. Aktivieren von Remoting
+## enable remoting
 
 ```powershell
-Enable-PSRemoting [-Force] [-SkipNetworkProfileCheck]
+Enable-PSRemoting -Force -SkipNetworkProfileCheck
 ```
 
-#### Wirkung:
+this will:
+* start and configure WinRM service
+* create WSMan listeners  
+* open TCP port 5985 (HTTP) + firewall exceptions
 
-* Startet und konfiguriert den **WinRM-Dienst**
-* Erstellt Listener (`WSMan:\Listener`)
-* Öffnet **TCP-Port 5985 (HTTP)** und ggf. Firewall-Ausnahmen
-
-#### Beispiel:
+## create non-interactive sessions
 
 ```powershell
-Enable-PSRemoting -Force
-```
-
-***
-
-### 2. Sitzung erstellen (nicht-interaktiv)
 
 ```powershell
 New-PSSession -ComputerName <Ziel> [-Credential <Benutzer>] [-UseSSL] [-Port <Nummer>] [-Authentication <Typ>]

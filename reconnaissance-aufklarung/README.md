@@ -1,7 +1,7 @@
 ---
-description: Informationssuche/sammlung für das gewünschte Ziel
+description: information gathering on your target before going loud
 ---
 
-# Reconnaissance (Aufklärung)
+# reconnaissance — know your target before you shoot
 
-Die Aufklärungsphase wird in passive und aktive Aufklärung ( Recon ) unterteilt.
+split into passive recon (they don't know you're looking) and active recon (you're poking their systems directly).

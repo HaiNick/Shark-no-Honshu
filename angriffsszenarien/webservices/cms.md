@@ -1,18 +1,18 @@
 ---
-description: Diese betreffen Plattformen mit bekanntem Schwachstellenprofil.
+description: platforms with known vulnerability profiles
 ---
 
-# CMS-spezifische Risiken
+# cms-specific risks — when convenience meets compromise
 
 {% hint style="info" %}
-## Beispiele:
+## common issues:
 
-* Veraltete Plugins / Themes
-* Fehlende Eingabevalidierung in Extensions
-* Unsichere Standardkonfigurationen
+* outdated plugins / themes
+* missing input validation in extensions  
+* insecure default configurations
 {% endhint %}
 
-## Wordpress
+## wordpress
 
 <details>
 
@@ -26,7 +26,7 @@ description: Diese betreffen Plattformen mit bekanntem Schwachstellenprofil.
 
 <details>
 
-<summary>Links im Bezug auf xmlrpc.php</summary>
+<summary>xmlrpc.php exploitation</summary>
 
 [https://nitesculucian.github.io/2019/07/01/exploiting-the-xmlrpc-php-on-all-wordpress-versions/](https://nitesculucian.github.io/2019/07/01/exploiting-the-xmlrpc-php-on-all-wordpress-versions/)
 

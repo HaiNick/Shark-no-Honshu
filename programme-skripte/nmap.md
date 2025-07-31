@@ -1,4 +1,4 @@
-# nmap
+# scan networks with nmap because knowing what's there matters
 
 <details>
 
@@ -10,44 +10,44 @@
 
 </details>
 
-## Scan-Arten
+## scan types
 
-<pre><code># ICMP echo Pakete auf jede IP im Subnetz
+<pre><code># ICMP echo packets to every IP in subnet
 nmap -PE -sn &#x3C;ip>/24
-nmap -PP  "" ""   # ICMP timestamp request ( ICMP Typ 13 ) 
-nmap -PM  "" ""   # ICMP adress mask query ( ICMP Typ 17 ) -> Antwort ( ICMP Typ 18 )
-nmap -PR "" ""    # ARP Scan
+nmap -PP  "" ""   # ICMP timestamp request ( ICMP type 13 ) 
+nmap -PM  "" ""   # ICMP address mask query ( ICMP type 17 ) -> response ( ICMP type 18 )
+nmap -PR "" ""    # ARP scan
 
-nmap -PS&#x3C;port>-&#x3C;port> "" "" # TCP SYN Ping
-nmap -PA&#x3C;p>-&#x3C;p> "" "" # TCP ACK Ping
-nmap -PU "" "" # UDP Ping
-<strong>[?] UDP Ping auf geschlossenen UDP-Port liefert ein ICMP port unreacheable zurück
+nmap -PS&#x3C;port>-&#x3C;port> "" "" # TCP SYN ping
+nmap -PA&#x3C;p>-&#x3C;p> "" "" # TCP ACK ping
+nmap -PU "" "" # UDP ping
+<strong>[!] UDP ping on closed UDP port returns ICMP port unreachable
 </strong>
 
-nmap -sT &#x3C;ip>    # TCP Scan : schliesst 3-Wege Handshake ab
-nmap -sS &#x3C;ip>    # SYN Scan ' sendet RST nach Handshake
-nmap -sU &#x3C;ip>    # UDP Scan
+nmap -sT &#x3C;ip>    # TCP scan: completes 3-way handshake
+nmap -sS &#x3C;ip>    # SYN scan: sends RST after handshake
+nmap -sU &#x3C;ip>    # UDP scan
 
-nmap -R &#x3C;scan typ> &#x3C;ip>/&#x3C;subn>
-Reverse-DNS-Lookup für alle möglichen Hosts in einem Subnetz,
-in der Hoffnung, aus den Namen einige Erkenntnisse zu gewinnen
+nmap -R &#x3C;scan type> &#x3C;ip>/&#x3C;subnet>
+reverse DNS lookup for all possible hosts in subnet,
+hoping to gain insights from hostnames
 
-Ausführlicher Scan
+thorough scan
 nmap -T4 -sT -sV -sC -A -p- $IP
 </code></pre>
 
-| Parameter                                                                                                                                                                                                                         | Bedeutung                                                |
+| parameter                                                                                                                                                                                                                         | meaning                                                  |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| `-n`                                                                                                                                                                                                                              | kein DNS lookup                                          |
-| `-R`                                                                                                                                                                                                                              | reverse-DNS lookup für alle hosts                        |
-| `-sn`                                                                                                                                                                                                                             | nur host discovery                                       |
+| `-n`                                                                                                                                                                                                                              | no DNS lookup                                            |
+| `-R`                                                                                                                                                                                                                              | reverse DNS lookup for all hosts                        |
+| `-sn`                                                                                                                                                                                                                             | host discovery only                                      |
 | `-d (-dd)`                                                                                                                                                                                                                        | debugging                                                |
-| `-v (-vv)`                                                                                                                                                                                                                        | ausführlich(er)                                          |
-| `--reason`                                                                                                                                                                                                                        | erweiterte Informationen für Scan-Ergebnisse             |
-| `--top-ports 10`                                                                                                                                                                                                                  | 10 verbreiteste ports                                    |
-| `-p-`                                                                                                                                                                                                                             | alle ports                                               |
-| `-T<0-5>`                                                                                                                                                                                                                         | Scangeschwindigkeit                                      |
-| `-T0`                                                                                                                                                                                                                             | am langsamsten (paran0id)                                |
+| `-v (-vv)`                                                                                                                                                                                                                        | verbose output                                           |
+| `--reason`                                                                                                                                                                                                                        | extended info for scan results                           |
+| `--top-ports 10`                                                                                                                                                                                                                  | 10 most common ports                                     |
+| `-p-`                                                                                                                                                                                                                             | all ports                                                |
+| `-T<0-5>`                                                                                                                                                                                                                         | scan speed                                               |
+| `-T0`                                                                                                                                                                                                                             | slowest (paranoid)                                       |
 | `-T5`                                                                                                                                                                                                                             | am schnellsten                                           |
 | <p><code>paranoid (0)     #  Vermeidung</code></p><p><code>sneaky (1)       #    von Alarm</code></p><p><code>polite (2)</code></p><p><code>normal (3)</code></p><p><code>aggressive (4)</code></p><p><code>insane (5)</code></p> | Scanstufen                                               |
 | `--min-rate <nummer>`                                                                                                                                                                                                             | Paketrate minimal                                        |

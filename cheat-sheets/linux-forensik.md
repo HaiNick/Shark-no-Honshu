@@ -1,52 +1,59 @@
-# Linux Forensik
+# linux forensics — where attackers leave traces
 
-## System & OS - Informationen
+## system and OS information
 
-| Bezeichnung         | Pfad                 | Lesbarkeit                 |
-| ------------------- | -------------------- | -------------------------- |
-| OS Release          | `/etc/os-release`    | any                        |
-| User Account        | `/etc/passwd`        | any                        |
-| User Gruppen        | `/etc/group`         | any                        |
-| Liste der Sudoer    | `/etc/sudoers`       | sudo/root                  |
-| Login Informationen | `/var/log/wtmp`      | sudo last -f /var/log/wtmp |
-| Authentication      | `/var/log/auth.log*` | any                        |
+| item | path | access |
+|------|------|--------|
+| OS release | `/etc/os-release` | any user |
+| user accounts | `/etc/passwd` | any user |
+| user groups | `/etc/group` | any user |
+| sudoers list | `/etc/sudoers` | sudo/root only |
+| login info | `/var/log/wtmp` | `last -f /var/log/wtmp` |
+| authentication | `/var/log/auth.log*` | any user |
 
-## Systemkonfiguration
+## system configuration
 
-<table><thead><tr><th width="296">Bezeichnung</th><th width="267">Pfad</th><th>Befehl</th></tr></thead><tbody><tr><td>Hostname</td><td><code>/etc/hostname</code></td><td></td></tr><tr><td>Zeitzone</td><td><code>/etc/timezone</code></td><td></td></tr><tr><td>Netzwerk Interfaces</td><td><code>/etc/network/interfaces</code></td><td>ip address show</td></tr><tr><td>Offene Netzwerk-Verbindungen</td><td></td><td>netstat -natp</td></tr><tr><td>Laufende Prozesse</td><td></td><td>ps aux</td></tr><tr><td>DNS Hostname Auflösung</td><td><code>/etc/hosts</code></td><td></td></tr><tr><td>DNS Server</td><td><code>/etc/resolv.conf</code></td><td></td></tr></tbody></table>
+| item | path | command |
+|------|------|---------|
+| hostname | `/etc/hostname` | |
+| timezone | `/etc/timezone` | |
+| network interfaces | `/etc/network/interfaces` | `ip addr show` |
+| open connections | | `netstat -natp` |
+| running processes | | `ps aux` |
+| DNS hostname resolution | `/etc/hosts` | |
+| DNS servers | `/etc/resolv.conf` | |
 
-## Persistenz
+## persistence mechanisms
 
-| Bezeichnung               | Pfad                  | Bedeutung |
-| ------------------------- | --------------------- | --------- |
-| Cronjobs                  | /etc/crontab          |           |
-| Registrierte Dienste      | /etc/init.d           |           |
-| Bash Shell Startup : user | /home/\<user>/.bashrc |           |
-| " " : systemweit          | /etc/bash.bashrc      |           |
-| " " : systemweit          | /etc/profile          |           |
+| mechanism | path | notes |
+|-----------|------|-------|
+| cronjobs | `/etc/crontab` | scheduled tasks |
+| system services | `/etc/init.d/` | startup services |
+| user bash startup | `/home/<user>/.bashrc` | per-user |
+| system bash startup | `/etc/bash.bashrc` | system-wide |
+| system profile | `/etc/profile` | system-wide |
 
-## Beweise für die Ausführung
+## execution evidence
 
-| Bezeichnung           | Pfad                         | Bedeutung |
-| --------------------- | ---------------------------- | --------- |
-| Authentifikationslogs | /var/log/auth.log\*          |           |
-| Bash Historie         | /home/\<user>/.bash\_history |           |
-| Vim Historie          | /home/\<user>/.viminfo       |           |
+| evidence | path | notes |
+|----------|------|-------|
+| authentication logs | `/var/log/auth.log*` | login attempts, sudo usage |
+| bash history | `/home/<user>/.bash_history` | command history |
+| vim history | `/home/<user>/.viminfo` | file editing history |
 
-## Logs
+## log locations
 
-| Bezeichnung            | Pfad                | Bedeutung |
-| ---------------------- | ------------------- | --------- |
-| Systemlogs             | /var/log/syslog     |           |
-| Authentifikationslogs  | /var/log/auth.log\* |           |
-| Logs für Drittsoftware | /var/log            |           |
+| log type | path | purpose |
+|----------|------|---------|
+| system logs | `/var/log/syslog` | general system events |
+| auth logs | `/var/log/auth.log*` | authentication events |
+| application logs | `/var/log/` | third-party software |
 
-{% code overflow="wrap" %}
+## parsing auth.log
+
+sudo command format:
+```
+sudo: cybert : TTY=pts/0 ; PWD=/home/cybert ; USER=root ; COMMAND=/usr/bin/apt install dokuwiki
 ```
 
-# Auth.log Sudo-Befehl von <user>cybert als USER mit COMMAND in Ordner PWD
-sudo:   cybert : TTY=pts/0 ; PWD=/home/cybert ; USER=root ; COMMAND=/usr/bin/apt install dokuwiki
-
-
-```
-{% endcode %}
+shows: user `cybert` ran `apt install dokuwiki` as `root` from `/home/cybert` on terminal `pts/0`
