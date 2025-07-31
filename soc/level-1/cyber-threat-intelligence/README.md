@@ -1,23 +1,36 @@
-# (Cyber-) Threat Intelligence
+# identify threats via structured intelligence collection and analysis.
 
-<details>
+## core intelligence sources
+- **commercial feeds**: recorded future, flashpoint, intel471
+- **open source**: alienvault OTX, abuse.ch, virustotal
+- **government**: FBI, CISA, military threat sharing
+- **industry**: financial services, healthcare, critical infrastructure  
+- **internal**: honeypots, incident analysis, threat hunting
 
-<summary>Links:</summary>
+## intelligence types
+- **tactical**: IOCs, signatures, immediate defensive actions
+- **operational**: campaign analysis, threat actor capabilities  
+- **strategic**: threat landscape, long-term trends, attribution
 
-[https://otx.alienvault.com/logout](https://otx.alienvault.com/logout)
+## IOC management platforms
+- **MISP**: open source threat intelligence sharing
+- **opencti**: structured threat intelligence management
+- **threatconnect**: commercial intelligence orchestration
+- **anomali**: threat intelligence platform and feeds
 
-[https://urlhaus.abuse.ch/browse/](https://urlhaus.abuse.ch/browse/)
+## practical applications
+- detection rule creation: convert IOCs to SIEM rules
+- threat hunting: proactive search for known techniques
+- incident attribution: link attacks to known campaigns  
+- risk assessment: prioritize defenses based on threat relevance
+- intelligence sharing: contribute to community defense
 
-[https://hunting.abuse.ch/](https://hunting.abuse.ch/)
+## key threat intelligence URLs
+- abuse.ch: malware samples and IOCs
+- urlhaus: malicious URL database  
+- malpedia: malware encyclopedia and TTPs
+- hybrid analysis: automated malware sandbox
+- virustotal: file and URL reputation service
 
-[https://bazaar.abuse.ch/](https://bazaar.abuse.ch/)
-
-[https://id-ransomware.blogspot.com/2023/06/xxxxxx-darxe-ransomware.html](https://id-ransomware.blogspot.com/2023/06/xxxxxx-darxe-ransomware.html)
-
-[https://www.bleepingcomputer.com/forums/t/786228/xxxxxx-darxe-ransomware-support-topic/](https://www.bleepingcomputer.com/forums/t/786228/xxxxxx-darxe-ransomware-support-topic/)
-
-[https://elastio.com/detectable-ransomware/darxe/](https://elastio.com/detectable-ransomware/darxe/)
-
-[https://malpedia.caad.fkie.fraunhofer.de/details/win.cobalt\_strike](https://malpedia.caad.fkie.fraunhofer.de/details/win.cobalt_strike)
-
-</details>
+[!] validate intelligence quality before operationalizing - false positives erode trust
+(._.) intelligence sharing agreements may restrict redistribution and attribution

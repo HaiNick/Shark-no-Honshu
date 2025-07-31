@@ -1,29 +1,40 @@
-# Digitale Forensik & Incident Response
+# respond to incidents via forensic investigation and evidence analysis.
 
-In diesem Bereich werden forensische Artefakte von digitalen Geräten wie Computern, Mediengeräten und Smartphones gesammelt, um Vorfälle zu untersuchen. Dieser Bereich unterstützt Sicherheitsexperten bei der Identifizierung von Spuren, die ein Angreifer bei einem Sicherheitsvorfall hinterlässt. Er hilft außerdem bei der Bestimmung des Ausmaßes der Kompromittierung einer Umgebung und bei der Wiederherstellung des ursprünglichen Zustands.
+## core DFIR capabilities
+- **incident response**: contain, eradicate, recover from security incidents
+- **digital forensics**: collect and analyze evidence from compromised systems
+- **malware analysis**: reverse engineer malicious code and techniques
+- **threat hunting**: proactive search for hidden threats in environment
+- **timeline analysis**: reconstruct attack progression and impact
 
-***
+## evidence collection priorities
+1. **volatile data**: memory, running processes, network connections
+2. **system state**: registry, event logs, file system metadata
+3. **disk images**: full forensic copies for offline analysis
+4. **network data**: packet captures, flow records, proxy logs
+5. **application logs**: database, web server, custom application events
 
-**DFIR u.a. bei:**
+## essential forensic tools
+- **autopsy**: disk image analysis and artifact recovery
+- **volatility**: memory forensics and malware detection
+- **kape**: artifact collection and parsing automation
+- **redline**: endpoint analysis and IOC detection
+- **velociraptor**: distributed endpoint investigation
+- **thehive**: incident response case management
 
-* Auffinden von Beweisen für Angreiferaktivitäten im Netzwerk sowie die Unterscheidung zwischen Fehlalarmen und tatsächlichen Sicherheitsvorfällen.
-* Robuste und nachhaltige Entfernung des Angreifers, sodass dieser keinen erneuten Zugang zum Netzwerk erlangen kann.
-* Identifizierung des Ausmaßes und des Zeitrahmens der Sicherheitsverletzung, um eine fundierte Kommunikation mit den relevanten Interessengruppen zu ermöglichen.
-* Aufdeckung der Schwachstellen, die zur Sicherheitsverletzung geführt haben, sowie die Ableitung notwendiger Änderungen, um ähnliche Vorfälle in Zukunft zu verhindern.
-* Analyse und Verständnis des Verhaltens des Angreifers, um zukünftige Eindringversuche proaktiv unterbinden zu können.
-* Weitergabe von Erkenntnissen über den Angreifer und dessen Methoden an die Sicherheitsgemeinschaft zur Unterstützung gemeinsamer Verteidigungsstrategien.
+## investigation workflow
+1. **initial triage**: scope incident and preserve volatile evidence
+2. **evidence acquisition**: collect disk images, memory dumps, logs
+3. **timeline creation**: correlate events across multiple systems
+4. **malware analysis**: understand attack tools and techniques
+5. **impact assessment**: determine data/systems compromised
+6. **attribution**: link to known threat actors or campaigns
 
-***
+## artifact analysis focus
+- **windows**: registry, prefetch, event logs, user profiles
+- **linux**: bash history, log files, cron jobs, user artifacts  
+- **network**: DNS queries, HTTP traffic, file transfers
+- **email**: phishing attachments, malicious links, account compromise
 
-### Überblick über den aktuellen Inhalt:
-
-<table><thead><tr><th width="212">Name</th><th>Inhalt</th></tr></thead><tbody><tr><td>Windows Forensik</td><td>Registry, Dateisysteme und forensische Artefakte</td></tr><tr><td>Linux Forensik</td><td>forensische Artefakte</td></tr><tr><td>Tools/Autopsy</td><td>Artefakte von disk images</td></tr><tr><td>Tools/Redline</td><td>Memory Analyse, Scan von Endpoints nach IOCs</td></tr><tr><td>Tools/KAPE</td><td>Kroll Artifact Parser &#x26; Extractor, Sammeln und Verarbeiten forensischer Artefakte</td></tr><tr><td>Tools/Volatility</td><td>Memory Forensik</td></tr><tr><td>Tools/Velociraptor</td><td>OpenSource Plattform zum Endpoint Monitoring, digitale Forensik und Cyber Response</td></tr><tr><td>Tools/TheHive Project</td><td>Security Incident Response Plattform zum Melden gefundener IOCs</td></tr></tbody></table>
-
-
-
-
-
-
-
-
-
+[!] preserve evidence integrity - use write-blocked copies for analysis
+(._.) legal requirements may dictate specific collection and handling procedures
