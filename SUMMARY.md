@@ -1,6 +1,6 @@
 # Table of contents
 
-* [/ psyKIdelic - PentestNotes](README.md)
+* [SHARK NO HONSHU](README.md)
 * [Informationen](informationen/README.md)
   * [Best-Practice](informationen/best-practice.md)
   * [Dateiformate](informationen/dateiformate.md)

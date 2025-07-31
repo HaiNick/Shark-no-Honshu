@@ -1,42 +1,60 @@
 ---
-description: https://docs.metasploit.com/docs/pentesting
+description: exploitation framework with everything included
 ---
 
-# Metasploit
+# metasploit — the swiss army knife of exploitation
 
-Metasploit ist ein Exploitation-Framework, das viele Scripte und Anwendungsfälle kombiniert.\
-Unter anderem:
+penetration testing framework that combines scanning, exploitation, payload generation, and post-exploitation in one package.
 
-* Scannen von Zielsystemen
-* Speicherung von Daten in einer Datenbank ( on-the-fly + persistent )
-* Schwachstellenscans
-* Ausnutzen von Schwachstellen auf einem Zielsystem
-* Erstellung von Payloads ( **msfvenom** )
-* CLI-Verbindung zu Zielsystem ( **meterpreter** )
+## what it does
 
-<table><thead><tr><th width="302">Befehl</th><th>Erklärung</th></tr></thead><tbody><tr><td><code>msfconsole</code></td><td>Metasploit starten</td></tr><tr><td><code>search &#x3C;name></code></td><td>Module suchen</td></tr><tr><td><code>use 1</code></td><td>Modul Nr. 1 aus Suche auswählen</td></tr><tr><td><code>use /auxiliary/scanner/x</code></td><td>Modul manuell auswählen</td></tr><tr><td><code>show options</code></td><td>Optionen und Konfiguration des ausgewählten Moduls anzeigen</td></tr><tr><td><code>set &#x3C;option> &#x3C;param></code></td><td>Parameter für Option x setzen</td></tr><tr><td><code>info &#x3C;modul></code></td><td>Info über Modul + Anwendung</td></tr><tr><td><code>show payloads</code></td><td>verfügbare Payloads anzeigen</td></tr><tr><td><code>set payload 1</code></td><td>Payload Nr. 1 auswählen</td></tr><tr><td><code>sessions</code></td><td>alle aktiven Sessions anzeigen</td></tr><tr><td><code>sessions -i 1</code></td><td>Verbindung mit Session 1 starten</td></tr><tr><td><code>CTRL + Z</code></td><td>Session in den Hintergrund legen</td></tr><tr><td><code>CTRL + C</code></td><td>Session schliessen</td></tr><tr><td><code>run</code> oder <code>exploit</code></td><td>Exploiting starten</td></tr></tbody></table>
+* scan target systems for vulnerabilities
+* store data in database (postgresql backend)
+* exploit vulnerabilities with ready-made modules  
+* generate payloads with `msfvenom`
+* interactive shells via `meterpreter`
 
-## Scanning
+## basic commands
 
+| command | purpose |
+|---------|---------|
+| `msfconsole` | start metasploit console |
+| `search <term>` | find modules by keyword |
+| `use 1` | select module #1 from search results |
+| `use auxiliary/scanner/smb/smb_version` | load module by path |
+| `show options` | display module configuration |
+| `set RHOSTS 10.0.0.1` | configure required options |
+| `info <module>` | detailed module information |
+| `show payloads` | list compatible payloads |
+| `set payload windows/meterpreter/reverse_tcp` | choose payload |
+| `sessions` | list active sessions |
+| `sessions -i 1` | interact with session #1 |
+| `CTRL + Z` | background current session |
+| `run` or `exploit` | execute the module |
+
+## scanning modules
+
+```bash
+# port scanning
+use auxiliary/scanner/portscan/tcp
+set RHOSTS 192.168.1.0/24
+run
+
+# UDP service discovery  
+use auxiliary/scanner/discovery/udp_sweep
+
+# SMB enumeration
+use auxiliary/scanner/smb/smb_enumshares  # enumerate shares
+use auxiliary/scanner/smb/smb_version     # grab SMB version
 ```
-# Suche nach Modul, hier "Scan von offenen Ports auf Zielsystem und Netzwerk"
-search portscan
 
-# UDP Service Identifikation
-scanner/discovery/udp_sweep
+## database setup
 
-# SMB Scan
-scanner/smb/smb_enumshares  # Shares enumerieren
-scanner/smb/smb_version     # Versionen extrahieren
-```
+metasploit uses postgresql to store scan results and track sessions.
 
-## Die interne Datenbank
-
-Für die Datenbank muss PostgreSQL gestartet werden.
-
-```
-systemctl start postgresql    # Datenbank starten
-msfdb init                    # Metasploit-Datenbank starten
+```bash
+systemctl start postgresql    # start database service
+msfdb init                    # initialize metasploit database
 
 db_status                     # Datenbank-Status prüfen
 workspace                     # Aktuellen Workspace anzeigen

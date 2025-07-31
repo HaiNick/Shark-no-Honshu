@@ -1,52 +1,61 @@
 ---
-description: https://tryhackme.com/room/burpsuitebasics
+description: web app pentesting framework that actually works
 cover: >-
   https://uploads-ssl.webflow.com/62efedb360a7998b0e43cb84/6321a0f076706854ff591093_All%20about%20BurpSuite.jpg
 coverY: 0
 ---
 
-# Burp Suite
+# burp suite — intercept everything
 
-## Beschreibung
+java-based framework for web/mobile app penetration testing. the industry standard.
 
-Ein auf Java-basierendes Framework zum Penetrationstest von Web/mobile - Anwendungen.
+## editions
 
-Es gibt 3 Editionen:
+* **community** (free) — rate limited, no scanner
+* **professional** ($$$) — automated vuln scanner, collaborator, unlimited  
+* **enterprise** ($$$$) — continuous scanning for enterprises
 
-* Burp Suite **Community** (kostenlos)
-* Burp Suite **Professional** (erweiterte Funktionalität:autom. Vuln. Scanner, kein Limit, API zur Integration weiterer Tools, Speicherfunktion, Zugriff auf Burp Suite Collaborator)
-* Burp Suite **Enterprise** (kontinuierlicher Scanner)
+## core modules
 
-## Grundfunktionen (built-in)
+### proxy
+intercept and modify HTTP/HTTPS requests between browser and target. the bread and butter.
 
-Zusätzlich können Erweiterungen (**kostenlos**/**-pflichtig**) hinzugefügt werden durch:
+### repeater
+capture a request, modify it, send it again. perfect for testing SQL injection payloads or API fuzzing.
 
-* **Burp Suite Extender-Modul** zum einfachen Laden von Erweiterungen geschrieben in Java, Python (mit Java Jython Interpreter) oder Ruby (mit Java JRuby Interpreter).
-* **Markplatz BApp Store** zum Herunterladen von Modulen Dritter
+tryhackme room: https://tryhackme.com/room/burpsuiterepeater
 
-### Proxy
+### intruder  
+spray endpoints with requests. brute force, fuzzing, wordlist attacks. community edition is throttled.
 
-Ermöglicht das Abfangen und Ändern von Anfragen und Antworten bei der Interaktion mit Webanwendungen.
+tryhackme room: https://tryhackme.com/room/burpsuiteintruder
 
-### Repeater ( [https://tryhackme.com/room/burpsuiterepeater](https://tryhackme.com/room/burpsuiterepeater) )
+### decoder
+transform data — base64, URL encoding, hex, etc. handy for payload preparation.
 
-Ermöglicht es, dieselbe Anfrage mehrmals zu erfassen, zu ändern und erneut zu senden. Diese Funktion ist besonders nützlich bei der Erstellung von Nutzdaten durch Ausprobieren (z. B. bei SQLi - Structured Query Language Injection) oder beim Testen der Funktionalität eines Endpunkts auf Schwachstellen.
+### comparer
+diff two requests/responses at word or byte level. spot differences quickly.
 
-### Intruder ( [https://tryhackme.com/room/burpsuiteintruder](https://tryhackme.com/room/burpsuiteintruder) )
+### sequencer
+analyze randomness of tokens, session cookies, CSRF tokens. weak entropy = session hijacking opportunities.
 
-Trotz der Ratenbeschränkungen in Burp Suite Community ermöglicht Intruder das Besprühen von Endpunkten mit Anfragen. Es wird üblicherweise für Brute-Force-Angriffe oder Fuzzing von Endpunkten verwendet.
+## shortcuts
 
-### Decoder
+| shortcut | function |
+|----------|----------|
+| `CTRL + Shift + D` | dashboard |
+| `CTRL + Shift + T` | target tab |
+| `CTRL + Shift + P` | proxy tab |
+| `CTRL + Shift + I` | intruder tab |
+| `CTRL + Shift + R` | repeater tab |
 
-Decoder bietet einen wertvollen Dienst für die Datentransformation. Er kann erbeutete Informationen dekodieren oder Nutzdaten verschlüsseln, bevor sie an das Ziel gesendet werden. Es gibt zwar alternative Dienste für diesen Zweck, aber die Nutzung von Decoder innerhalb der Burp Suite kann sehr effizient sein.
+## extensions
 
-### Comparer
+burp extender loads plugins written in java, python (jython), ruby (jruby).
 
-Wie der Name schon sagt, ermöglicht der Comparer den Vergleich zweier Daten auf Wort- oder Byte-Ebene. Die Möglichkeit, potenziell große Datensegmente mit einer einzigen Tastenkombination direkt an ein Vergleichstool zu senden, ist zwar nicht exklusiv für Burp Suite, beschleunigt den Prozess aber erheblich.
+bapp store: https://portswigger.net/bappstore
 
-### Sequencer
-
-Der Sequencer wird typischerweise eingesetzt, um die Zufälligkeit von Token wie Session-Cookie-Werten oder anderen vermeintlich zufällig generierten Daten zu bewerten. Wenn der Algorithmus, der für die Generierung dieser Werte verwendet wird, keine sichere Zufälligkeit aufweist, kann er Anhaltspunkte für verheerende Angriffe liefern.
+writing extensions: https://portswigger.net/burp/extender/writing-your-first-burp-suite-extension
 
 ## Shortcuts
 

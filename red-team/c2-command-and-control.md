@@ -1,154 +1,137 @@
-# C2 - Command & Control
+# command and control — manage your botnet like a sysadmin
 
-Ein Command-and-Control-Framework (C2-Framework) ist eine Softwarelösung, die es ermöglicht, mehrere Reverse Shells – in diesem Kontext als C2-Agents bezeichnet – zentral zu verwalten und zu steuern. Häufig verfügen diese Frameworks über integrierte Payload-Generatoren, wie etwa MSFVenom im Metasploit Framework.
+frameworks for running multiple reverse shells without losing your sanity. c2 manages agents, deploys payloads, keeps callbacks organized.
 
-***
+## c2 framework components
 
-## Struktur eines C2-Frameworks
+**c2 server**
+central brain that talks to all agents. operators send commands through this.
 
-**C2-Server**
+**agents / payloads**  
+reverse shells with extra features — file transfer, process injection, lateral movement. configurable callback intervals to avoid detection patterns.
 
-Der C2-Server bildet die zentrale Komponente eines C2-Frameworks. Er fungiert als Kommunikationsschnittstelle zwischen dem Operator und den Agents. Letztere nehmen regelmäßig Kontakt zum Server auf, um Befehle entgegenzunehmen.
+**listeners**
+services waiting for agent connections on specific ports/protocols (DNS, HTTP, HTTPS, custom).
 
-**Agents / Payloads**
+**beaconing**
+periodic check-ins from agents to grab new commands and report status.
 
-Ein Agent ist ein vom Framework generiertes Programm, das eine Verbindung zu einem Listener auf dem C2-Server aufbaut. Im Vergleich zu einer einfachen Reverse Shell bietet ein Agent erweiterte Funktionalitäten, etwa den Datei-Upload/-Download oder die Ausführung interner Kommandos. Agents sind in der Regel hochgradig konfigurierbar – insbesondere hinsichtlich der Frequenz und Methodik, mit der sie den Server kontaktieren.
+**beaconing**
 
-**Listener**
+beaconing is the periodic callback from an agent to the c2 server. this process transmits status and receives new instructions.
 
-Ein Listener ist ein Dienst auf dem C2-Server, der eingehende Verbindungen über spezifische Ports oder Protokolle (z. B. DNS, HTTP oder HTTPS) entgegennimmt. Er bildet das Gegenstück zum initialen Verbindungsaufbau eines Agents.
+example: havoc c2 beacon: [https://www.virustotal.com/gui/file/99784f28e4e95f044d97e402bbf58f369c7c37f49dc5bf48e6b2e706181db3b7/summary](https://www.virustotal.com/gui/file/99784f28e4e95f044d97e402bbf58f369c7c37f49dc5bf48e6b2e706181db3b7/summary)
 
-**Beaconing**
-
-Als Beaconing bezeichnet man den periodischen Rückruf eines Agents zum C2-Server. Dieser Vorgang dient der Statusübermittlung und dem Empfang neuer Anweisungen.
-
-Bsp: Havoc C2-Beacon: [https://www.virustotal.com/gui/file/99784f28e4e95f044d97e402bbf58f369c7c37f49dc5bf48e6b2e706181db3b7/summary](https://www.virustotal.com/gui/file/99784f28e4e95f044d97e402bbf58f369c7c37f49dc5bf48e6b2e706181db3b7/summary)
-
-Decoding u.a.: [https://www.immersivelabs.com/resources/blog/havoc-c2-framework-a-defensive-operators-guide](https://www.immersivelabs.com/resources/blog/havoc-c2-framework-a-defensive-operators-guide)
+decoding among others: [https://www.immersivelabs.com/resources/blog/havoc-c2-framework-a-defensive-operators-guide](https://www.immersivelabs.com/resources/blog/havoc-c2-framework-a-defensive-operators-guide)
 
 ***
 
-### Tarnung von Callback-Verbindungen
+### hiding callback connections
 
-**Sleep-Timer**
+**sleep timer**
 
-Ein zentrales Merkmal zur Verschleierung von C2-Kommunikation ist die zeitliche Steuerung des Beaconings. Sicherheitslösungen wie Antivirenprogramme oder Firewalls erkennen oft wiederkehrende Verbindungen als verdächtig. Ein definierter Sleep-Timer steuert daher die Intervalle zwischen den Rückrufen.
+a key feature for concealing c2 communication is temporal control of beaconing. security solutions like antiviruses or firewalls often recognize recurring connections as suspicious. a defined sleep timer controls intervals between callbacks.
 
-**Jitter**
+**jitter**
 
-Jitter ergänzt den Sleep-Timer um eine Zufallskomponente, sodass das Zeitintervall zwischen den Beaconing-Vorgängen variiert. Dieses unregelmäßige Muster simuliert besser das Verhalten realer Benutzer und erschwert die Erkennung durch Sicherheitsmechanismen.
-
-***
-
-### Arten von Payloads
-
-**Stageless Payloads**
-
-Stageless Payloads enthalten den vollständigen C2-Agent bereits im initialen Code und starten sofort nach Ausführung das Beaconing. Die typischen Schritte bei der Verwendung sind:
-
-1. Der Dropper wird auf das Zielsystem übertragen und ausgeführt.
-2. Das Beaconing zum C2-Server beginnt unmittelbar.
-
-**Staged Payloads**
-
-Staged Payloads bestehen aus mehreren Komponenten. Der initiale Code – meist als Dropper bezeichnet – stellt eine Verbindung zum C2-Server her, um weitere Teile des Agents nachzuladen. Diese Methode bietet Vorteile hinsichtlich Codegröße und Tarnung:
-
-1. Der Dropper wird auf dem Zielsystem ausgeführt.
-2. Er kontaktiert den C2-Server, um die nächste Stufe (Stage 2) abzurufen.
-3. Die zweite Stufe wird auf das Zielsystem übertragen und im Speicher ausgeführt.
-4. Das Beaconing beginnt.
-
-Diese Technik reduziert die initiale Codebasis und verbessert die Umgehung von Sicherheitslösungen durch Obfuskation.
-
-**Weitere Payload-Formate**
-
-C2-Frameworks unterstützen in der Regel eine Vielzahl von Payload-Formaten, unter anderem:
-
-* PowerShell-Skripte mit eingebettetem C#-Code
-* HTA-Dateien (HTML Applications)
-* JScript-Dateien
-* Visual Basic-Skripte oder -Anwendungen
-* Microsoft Office-Dokumente mit eingebetteten Makros
+jitter adds a random component to the sleep timer, so time intervals between beaconing vary. this irregular pattern better simulates real user behavior and makes detection by security mechanisms harder.
 
 ***
 
-### Module
+### payload types
 
-Module erweitern die Funktionalität eines C2-Frameworks erheblich. Sie werden in verschiedenen Programmiersprachen implementiert, abhängig vom jeweiligen Framework:
+**stageless payloads**
 
-* **Cobalt Strike:** Aggressor Scripts (Aggressor Scripting Language)
-* **PowerShell Empire:** unterstützt mehrere Skriptsprachen
-* **Metasploit:** Ruby-basierte Module
+stageless payloads contain the complete c2 agent in the initial code and start beaconing immediately after execution. typical usage steps:
 
-**Post-Exploitation-Module**
+1. dropper is transferred to target system and executed
+2. beaconing to c2 server begins immediately
 
-Diese Module kommen nach erfolgreicher Kompromittierung eines Zielsystems zum Einsatz. Beispiele reichen vom Ausführen von Reconnaissance-Tools wie _SharpHound.ps1_ bis zur Extraktion und Analyse sensibler Daten (z. B. aus dem Prozess _lsass.exe_).
+**staged payloads**
 
-**Pivoting-Module**
+staged payloads consist of multiple components. the initial code - usually called a dropper - establishes a connection to the c2 server to download additional parts of the agent. this method offers advantages in code size and concealment:
 
-Pivoting-Module ermöglichen die Erweiterung der Zugriffsreichweite innerhalb eines Netzwerks. So kann etwa mit administrativen Rechten ein sogenannter SMB-Beacon eingerichtet werden, der das kompromittierte System als Proxy für andere Hosts im internen Netzwerk nutzt.
+1. dropper is executed on target system
+2. it contacts the c2 server to retrieve the next stage (stage 2)
+3. second stage is transferred to target system and executed in memory
+4. beaconing begins
 
-***
+this technique reduces initial code base and improves evasion of security solutions through obfuscation.
 
-### Einsatz von C2-Frameworks im Internet
+**additional payload formats**
 
-**Domain Fronting**
+c2 frameworks typically support various payload formats including:
 
-Domain Fronting ist eine Technik, bei der der Datenverkehr scheinbar über einen vertrauenswürdigen Anbieter (z. B. Cloudflare) geleitet wird. Die eigentliche C2-Kommunikation wird dabei verschleiert, da sie über bekannte IP-Adressen und Domains erfolgt. Aus Sicht der Geolokalisierung erscheint der Datenverkehr unauffällig.
-
-**C2 Profiles**
-
-C2-Profile definieren, wie ein C2-Server HTTP-Anfragen verarbeitet. Diese Technik kann unter verschiedenen Begriffen auftreten, etwa:
-
-* NGINX Reverse Proxy
-* Apache Mod\_Proxy / Mod\_Rewrite
-* Malleable HTTP C2 Profiles
-
-Durch gezielte Manipulation von HTTP-Headern, z. B. `X-C2-Server`, kann der Server differenzierte Antworten liefern. So kann ein harmloser Webserver für Außenstehende eine generische Webseite darstellen, während er gleichzeitig auf spezifische Anfragen eines Agents reagiert.
+* powershell scripts with embedded c# code
+* hta files (html applications)
+* jscript files
+* visual basic scripts or applications
+* microsoft office documents with embedded macros
 
 ***
 
-## Bekannte C2-Frameworks
+### modules
 
-### Kostenlos
+modules significantly extend c2 framework functionality. they're implemented in different programming languages depending on the framework:
 
-* Metasploit \[[https://www.metasploit.com/](https://www.metasploit.com/)]
-* Armitage \[[https://web.archive.org/web/20211006153158/http://www.fastandeasyhacking.com/](https://web.archive.org/web/20211006153158/http://www.fastandeasyhacking.com/)]
-* Powershell Empire/ Starkiller \[[https://bc-security.gitbook.io/empire-wiki/](https://bc-security.gitbook.io/empire-wiki/)], \[[https://github.com/BC-SECURITY/Starkiller](https://github.com/BC-SECURITY/Starkiller)]
-* Covenant \[[https://github.com/cobbr/Covenant](https://github.com/cobbr/Covenant)]
-* Sliver \[[https://github.com/BishopFox/sliver](https://github.com/BishopFox/sliver)]
-* Havoc \[[https://github.com/HavocFramework/Havoc](https://github.com/HavocFramework/Havoc?tab=readme-ov-file)]
+* **cobalt strike:** aggressor scripts (aggressor scripting language)
+* **powershell empire:** supports multiple scripting languages
+* **metasploit:** ruby-based modules
 
+**post-exploitation modules**
 
+these modules are used after successful system compromise. examples range from running reconnaissance tools like _sharphound.ps1_ to extracting and analyzing sensitive data (e.g., from _lsass.exe_ process).
 
-### Kommerziell
+**pivoting modules**
 
-* Cobalt strike \[[https://www.cobaltstrike.com/](https://www.cobaltstrike.com/)]
-* Brute Ratel \[[https://bruteratel.com/](https://bruteratel.com/)]
+pivoting modules enable extending access reach within a network. for example, with administrative rights, an smb beacon can be set up using the compromised system as a proxy for other hosts in the internal network.
 
+***
 
+### c2 frameworks on the internet
 
-### Weitere Infos
+**domain fronting**
+
+domain fronting is a technique where traffic appears to route through a trusted provider (e.g., cloudflare). actual c2 communication is concealed as it occurs via known ip addresses and domains. from a geolocation perspective, traffic appears unremarkable.
+
+**c2 profiles**
+
+c2 profiles define how a c2 server processes http requests. this technique may appear under various terms:
+
+* nginx reverse proxy
+* apache mod_proxy / mod_rewrite
+* malleable http c2 profiles
+
+through targeted manipulation of http headers like `x-c2-server`, the server can deliver differentiated responses. thus a harmless web server can display a generic webpage to outsiders while simultaneously responding to specific agent requests.
+
+***
+
+## known c2 frameworks
+
+### free
+
+* metasploit [[https://www.metasploit.com/](https://www.metasploit.com/)]
+* armitage [[https://web.archive.org/web/20211006153158/http://www.fastandeasyhacking.com/](https://web.archive.org/web/20211006153158/http://www.fastandeasyhacking.com/)]
+* powershell empire/ starkiller [[https://bc-security.gitbook.io/empire-wiki/](https://bc-security.gitbook.io/empire-wiki/)], [[https://github.com/BC-SECURITY/Starkiller](https://github.com/BC-SECURITY/Starkiller)]
+* covenant [[https://github.com/cobbr/Covenant](https://github.com/cobbr/Covenant)]
+* sliver [[https://github.com/BishopFox/sliver](https://github.com/BishopFox/sliver)]
+* havoc [[https://github.com/HavocFramework/Havoc](https://github.com/HavocFramework/Havoc?tab=readme-ov-file)]
+
+### commercial
+
+* cobalt strike [[https://www.cobaltstrike.com/](https://www.cobaltstrike.com/)]
+* brute ratel [[https://bruteratel.com/](https://bruteratel.com/)]
+
+### more info
 
 {% embed url="https://howto.thec2matrix.com/" %}
 
-## Methoden
+## methods
 
-
-
-
-
-### Identifikation des anfragenden Gerätes ( Agent oder Standard Client )
+### identifying requesting device (agent or standard client)
 
 <div data-full-width="true"><figure><img src="https://tryhackme-images.s3.amazonaws.com/user-uploads/5d5a2b006986bf3508047664/room-content/22eac0e3ab2de3f61d57e858cee3e33e.png" alt=""><figcaption></figcaption></figure></div>
 
-Referenzen:
+references:
 
 [https://github.com/HavocFramework/Havoc?tab=readme-ov-file](https://github.com/HavocFramework/Havoc?tab=readme-ov-file)
-
-
-
-
-
-
-

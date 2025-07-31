@@ -1,42 +1,42 @@
-# Passive Reconnaissance
+# passive reconnaissance — gather intel without touching their systems
 
-Alles an Wissen, das über öffentliche Ressourcen ermittelt werden kann. Dabei wird mit dem Ziel/Zielsystem nicht agiert.
+everything you can learn from public sources without directly interacting with the target. they shouldn't know you exist.
 
-Typische Aktivitäten beinhalten:
+## typical activities
 
-* DNS-Einträge auslesen ( Domain von öffentlichem DNS-Server )
-* Werbung für Stellenangebote des Zielunternehmens
-* Zeitungsartikel über das Zielunternehmen ( facebook, etc. )
+* DNS records from public servers
+* job postings from target company  
+* news articles, social media about the organization
+* public filing, SEC documents, press releases
+* employee LinkedIn profiles, conference talks
 
-### Whois
+## whois lookups
 
-Request und Response-Protokoll nach RFC 3912 ( [https://www.ietf.org/rfc/rfc3912.txt](https://www.ietf.org/rfc/rfc3912.txt) ) Port : 43
+RFC 3912 protocol on port 43. gives you domain registration details.
 
-Whois liefert ausführliche Informationen über registrierte Domain.
-
-* Registrar
-* Kontaktinformationen
-* Zeitstempel ( creation, update, expiration )
-* Nameserver ( welcher Server zum Auflösen des Domain-Name verwendet wird )
-
-```
-$> whois url.com
+```bash
+whois target.com
 ```
 
-### nslookup ( Name Server Look Up )
+returns:
+* registrar information
+* contact details (often privacy-protected now)
+* creation, update, expiration dates
+* nameservers handling DNS for the domain
 
-Auslesen des DNS-Servers&#x20;
+## nslookup queries
 
+query DNS servers for various record types
+
+```bash
+nslookup -type=A google.com 1.1.1.1
+nslookup -type=MX target.com 8.8.8.8
+nslookup -type=TXT company.com
 ```
-$> nslookup OPTIONS DOMAIN_NAME SERVER
-$> nslookup -type=A google.de 1.1.1.1    # Beispiel mit google.de auf Cloudflare DNS
-```
 
-* OPTIONS : enthält Art der Anfrage bzw. gewünschte Information ( Tabelle )
-* DOMAIN\_NAME : enthält die Zieldomain
-* SERVER : ist der DNS-Server, welcher durchsucht werden soll ( die Anfrage erhält ). Hier können alle öffentlichen DNS-Server angefragt werden. ( [https://duckduckgo.com/?q=public+dns](https://duckduckgo.com/?q=public+dns) )
-
-Google : `8.8.8.8, 8.8.4.4`&#x20;
+useful public DNS servers:
+* cloudflare: `1.1.1.1`, `1.0.0.1`
+* google: `8.8.8.8`, `8.8.4.4`
 
 Cloudflare : `1.1.1.1, 1.0.0.1`&#x20;
 
