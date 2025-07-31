@@ -1,8 +1,8 @@
 ---
-description: Manipulation von Datenbankabfragen
+description: manipulate database queries through user input
 ---
 
-# SQLi ( SQL Injection )
+# sql injection — break databases through bad input handling
 
 <details>
 
@@ -12,26 +12,24 @@ description: Manipulation von Datenbankabfragen
 
 </details>
 
-SQL-Injection ist eine weit verbreitete Schwachstelle in Webanwendungen. Sie erlaubt es Angreifern, manipulierte Eingaben in SQL-Abfragen einzuschleusen, um unautorisierten Zugriff auf Datenbanken zu erlangen oder Daten zu verändern. SQLi kann bei verschiedenen SQL-Befehlen auftreten, darunter `SELECT`, `UPDATE`, `DELETE` und `INSERT`. Die Auswirkungen reichen von Datendiebstahl bis hin zur vollständigen Kontrolle über die Datenbank.
+widespread vulnerability in web applications that allows attackers to inject malicious input into SQL queries, gaining unauthorized database access or modifying data. affects `SELECT`, `UPDATE`, `DELETE`, and `INSERT` statements. consequences range from data theft to complete database control.
 
-***
+## in-band sqli
 
-### **1. In-Band SQLi**
+**definition:**
+simplest and most common form. extracted data is returned through the same communication channel as the original request. two common subtypes: error-based and union-based.
 
-**Definition:**\
-In-Band SQL-Injection ist die einfachste und am häufigsten genutzte Form. Die abgefragten Daten werden über denselben Kommunikationskanal wie die ursprüngliche Anfrage zurückgegeben. Zwei gängige Untertypen sind _Error-Based_ und _Union-Based_ SQLi.
+### database information gathering
 
-#### **1.1 Datenbankinformationen abfragen**
+goal: extract information about the database management system (DBMS) - version, tables, columns.
 
-Ziel ist es, Informationen über das Datenbankmanagementsystem (DBMS) zu gewinnen, wie etwa Version, Tabellen oder Spalten.
-
-**Beispiele zur Versionserkennung:**
+**version detection examples:**
 
 ```sql
--- MySQL und MSSQL
+-- MySQL and MSSQL
 ',nickName=@@version,email='
 
--- Oracle
+-- Oracle  
 ',nickName=(SELECT banner FROM v$version),email='
 
 -- SQLite
