@@ -1,21 +1,47 @@
-# /proc
+# /proc virtual filesystem because kernel exposes runtime data.
 
-`/proc` ist ein spezielles Verzeichnis in Linux, das eine virtuelle Dateisystemstruktur enthält, die Informationen über den aktuellen Zustand des Systems und laufende Prozesse liefert. Es wird nicht von der Festplatte gespeichert, sondern existiert im RAM und wird dynamisch vom Kernel erstellt. Der Inhalt von `/proc` ermöglicht den Zugriff auf systemrelevante Daten und stellt ein Interface für die Interaktion mit dem Kernel bereit.
+## key files
+```bash
+/proc/cpuinfo           # CPU details - model, cores, flags
+/proc/meminfo           # memory usage - total, free, buffers
+/proc/uptime            # system uptime and idle time
+/proc/version           # kernel version and build info
+/proc/cmdline           # kernel boot parameters
+/proc/mounts            # mounted filesystems
+/proc/net/arp           # ARP table
+/proc/net/tcp           # TCP connections
+/proc/loadavg           # system load averages
+```
 
-#### Wichtige Verzeichnisse und Dateien in `/proc`:
+## process directories
+each PID has `/proc/[pid]/`:
+```bash
+/proc/1234/cmdline      # command line that started process
+/proc/1234/environ      # environment variables
+/proc/1234/fd/          # file descriptors (open files)
+/proc/1234/maps         # memory mappings
+/proc/1234/status       # process status info
+/proc/1234/cwd          # current working directory (symlink)
+/proc/1234/exe          # executable file (symlink)
+```
 
-* **`/proc/[pid]`**: Enthält Informationen über einen spezifischen laufenden Prozess, wobei `[pid]` die Prozess-ID ist. Diese Informationen umfassen Details wie Status, CPU-Auslastung, offene Dateien und Speichernutzung.
-* **`/proc/cpuinfo`**: Zeigt Informationen über den Prozessor, wie Modell, Anzahl der Kerne und Architektur.
-* **`/proc/meminfo`**: Bietet detaillierte Informationen über die Speichernutzung des Systems.
-* **`/proc/uptime`**: Zeigt die Systemlaufzeit sowie die Leerlaufzeit des Systems.
-* **`/proc/version`**: Zeigt die Kernel-Version des Systems an.
+## useful commands
+```bash
+cat /proc/cpuinfo | grep "model name"   # CPU model
+cat /proc/meminfo | grep MemTotal       # total RAM
+cat /proc/loadavg                       # current load
+ls -la /proc/*/exe | grep deleted       # processes with deleted binaries
+find /proc/*/fd -type l -ls 2>/dev/null | grep socket    # network sockets
+```
 
-#### Verwendung von `/proc`:
+## privilege escalation vectors
+```bash
+ls -la /proc/*/fd/ 2>/dev/null | grep -E "(log|shadow|passwd)"    # sensitive file handles
+cat /proc/*/environ 2>/dev/null | grep -i pass                   # passwords in env vars
+```
 
-* Überwachung und Diagnose von Systemressourcen und Prozessen
-* Abrufen von Kernel- und Hardwareinformationen
-* Systemadministration und Troubleshooting
-
-Da `/proc` eine virtuelle Struktur ist, speichert sie keine echten Dateien und stellt stattdessen Schnittstellen zum Kernel bereit, die bei Bedarf aktualisiert werden.
-
-{% embed url="https://docs.kernel.org/filesystems/proc.html" %}
+## notes
+[!] virtual filesystem - exists only in RAM, not on disk
+[!] provides kernel interface - no real files stored
+[!] process info readable by process owner and root
+[!] some info only visible to root (like other users' process details)
