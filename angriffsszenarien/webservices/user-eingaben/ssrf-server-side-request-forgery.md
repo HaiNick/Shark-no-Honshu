@@ -2,7 +2,7 @@
 description: Server wird zur internen Kommunikation missbraucht
 ---
 
-# SSRF - Server Side Request Forgery
+# SSRF - server side request forgery — make servers attack themselves
 
 <details>
 

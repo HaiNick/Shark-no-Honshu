@@ -1,4 +1,8 @@
-# LFI - Local File Inclusion
+# LFI - local file inclusion — read server files through bad input handling
+
+**local file inclusion (LFI)** is a vulnerability in web applications where an attacker can read local files on the server through manipulated input. LFI commonly occurs in PHP applications when functions like `include`, `require`, `include_once`, or `require_once` are used insecurely. also possible in ASP, JSP, or node.js environments.
+
+LFI typically relies on **path traversal (path manipulation)** to access system files like `/etc/passwd`. - Local File Inclusion
 
 **Local File Inclusion (LFI)** ist eine Schwachstelle in Webanwendungen, bei der ein Angreifer durch manipulierte Eingaben lokale Dateien auf dem Server lesen kann. LFI tritt häufig in PHP-Anwendungen auf, wenn Funktionen wie `include`, `require`, `include_once` oder `require_once` unsicher verwendet werden. Sie ist jedoch auch in anderen Umgebungen wie ASP, JSP oder Node.js möglich.
 

@@ -1,4 +1,4 @@
-# RFI - Remote File Inclusion
+# RFI - remote file inclusion — execute code from external servers
 
 **Remote File Inclusion (RFI)** ist eine Schwachstelle in Webanwendungen, bei der externe Dateien von einem Remote-Server über unsichere Eingabeverarbeitung eingebunden werden können. Ähnlich wie bei Local File Inclusion (LFI) liegt die Ursache meist in fehlender oder unzureichender Validierung von Benutzereingaben, insbesondere in Funktionen wie `include()` oder `require()` in PHP.
 
