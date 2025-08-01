@@ -1,23 +1,36 @@
-# Blue Team
+# defend networks via monitoring and detection. spot intrusions before they spread.
 
-* [ ] **Netzwerk-Monitoring & Logging**\
-  – IDS/IPS (z. B. Snort, Suricata), NetFlow, Syslog
-* [ ] **Firewall & ACL-Konfiguration**
-* [ ] **Segmentierung & VLANs**
-* [ ] **Network Access Control (NAC)**
-* [ ] **Zero Trust Networking**
-* [ ] **Threat Hunting in Netzwerkdaten**
-* [ ] **Detection von Scans / Anomalien**
-* [ ] **SIEM-Integration von Netzwerkdaten**
+## network monitoring & logging
+- IDS/IPS: `snort`, `suricata` for signature-based detection
+- netflow analysis: identify traffic patterns, exfiltration
+- syslog centralization: aggregate logs for correlation
+- packet capture: `tcpdump`, `wireshark` for deep inspection
 
-## Einzuordnen
+## network segmentation
+- firewall rules: block lateral movement between vlans  
+- ACLs: restrict protocol access by user/system role
+- network access control (NAC): authenticate before network access
+- zero trust: verify every connection, assume breach
 
-Zusammenfassend lässt sich sagen, dass Angriffe auf Anmeldesysteme mit einem Tool wie THC Hydra in Kombination mit einer geeigneten Wortliste effizient durchgeführt werden können. Der Schutz vor solchen Angriffen kann sehr komplex sein und hängt vom Zielsystem ab. Einige der Ansätze sind:
+## threat hunting in network data
+- scan detection: identify reconnaissance attempts
+- anomaly detection: baseline normal vs suspicious traffic  
+- lateral movement detection: east-west traffic analysis
+- data exfiltration detection: large outbound transfers
 
-* Passwort-Richtlinie: Erzwingt Mindestkomplexitätsbeschränkungen für die vom Benutzer festgelegten Passwörter.&#x20;
-* Kontosperrung: Sperrt das Konto nach einer bestimmten Anzahl von Fehlversuchen.&#x20;
-* Authentifizierungsversuche drosseln: Verzögert die Antwort auf einen Anmeldeversuch. Eine Verzögerung von ein paar Sekunden ist für jemanden, der das Passwort kennt, tolerierbar, kann aber automatisierte Tools stark behindern.&#x20;
-* Verwendung von CAPTCHA: Erfordert die Lösung einer für Maschinen schwierigen Frage. Es funktioniert gut, wenn die Anmeldeseite über eine grafische Benutzeroberfläche (GUI) erfolgt. (Hinweis: CAPTCHA steht für Completely Automated Public Turing test to tell Computers and Humans Apart).&#x20;
-* Die Verwendung eines öffentlichen Zertifikats für die Authentifizierung verlangen. Dieser Ansatz funktioniert z. B. gut mit SSH.&#x20;
-* Zwei-Faktoren-Authentifizierung: Aufforderung an den Benutzer, einen Code einzugeben, der über andere Wege verfügbar ist, z. B. per E-Mail, Smartphone-App oder SMS.&#x20;
-* Es gibt viele andere Ansätze, die anspruchsvoller sind oder ein gewisses Maß an Wissen über den Nutzer erfordern, wie z. B. die IP-basierte Geolokalisierung.
+## SIEM integration 
+- centralize network logs with host/application data
+- correlation rules for multi-stage attack detection
+- automated response: block IPs, isolate systems
+- threat intelligence feeds: known bad indicators
+
+## authentication attack defenses
+- account lockout: lock after `n` failed attempts
+- rate limiting: delay authentication responses  
+- multi-factor authentication: SMS/TOTP/hardware tokens
+- certificate-based auth: PKI for SSH/VPN access  
+- geolocation blocking: restrict login locations
+- CAPTCHA: human verification for web portals
+
+[!] password policies alone insufficient against credential stuffing
+(._.) geolocation easily bypassed with VPNs, combine with other factors

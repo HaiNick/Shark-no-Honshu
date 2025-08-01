@@ -1,97 +1,98 @@
-# Grundlagen
+# respond to incidents via forensic analysis and evidence collection.
 
-### Artefakte (Artifacts)
+## artifact collection priority
+1. **volatile memory**: RAM, running processes, network connections
+2. **system state**: registry, event logs, prefetch, user artifacts  
+3. **file system**: disk images, file metadata, deleted files
+4. **network data**: packet captures, flow records, proxy logs
 
-Artefakte werden definiert als Beweisstücke, die auf eine an einem System durchgeführte Aktivität hinweisen. Im Rahmen von DFIR werden Artefakte gesammelt, um eine Hypothese oder Behauptung über Angreiferaktivitäten zu untermauern.
+## evidence preservation
+```bash
+# create forensic disk image
+dd if=/dev/sda of=/mnt/evidence/disk_image.dd bs=4096 conv=noerror,sync
+md5sum /mnt/evidence/disk_image.dd > /mnt/evidence/disk_image.md5
 
-Es sei beispielsweise die Behauptung aufgestellt, dass der Angreifer Windows-Registrierungsschlüssel verwendet hat, um die Persistenz eines Systems aufrechtzuerhalten. In diesem Fall können die entsprechenden Registrierungsschlüssel zur Stützung der Behauptung herangezogen werden. In diesem Fall wird der besagte Registrierungsschlüssel als Artefakt betrachtet.
+# memory acquisition
+LiME or WinPmem for live memory capture
+volatility for memory analysis
 
-Das Sammeln von Artefakten stellt einen essenziellen Bestandteil des DFIR-Prozesses dar. Artefakte können aus dem Dateisystem, dem Speicher oder der Netzwerkaktivität des Endpunkts oder Servers gesammelt werden.
+# write-protect evidence
+mount -o ro,loop /mnt/evidence/disk_image.dd /mnt/analysis/
+```
 
-***
+## timeline creation
+```bash
+# filesystem timeline
+fls -r -m / /mnt/analysis/ > filesystem_timeline.txt
+mactime -b filesystem_timeline.txt > timeline_readable.txt
 
-### Beweissicherung (Evidence Preservation)
+# log correlation timeline  
+log2timeline.py --parsers="winevtx,prefetch,webhist" timeline.plaso /mnt/analysis/
+psort.py -o l2tcsv timeline.plaso > events_timeline.csv
+```
 
-Im Rahmen der Durchführung von DFIR ist die Wahrung der Integrität der gesammelten Beweise von essentieller Bedeutung. Aus diesem Grund existieren in der Branche bestimmte bewährte Praktiken.
+## malware analysis workflow
+1. **static analysis**: file hashes, strings, imports, metadata
+2. **dynamic analysis**: sandbox execution, network traffic, file changes
+3. **code analysis**: disassembly, reverse engineering, IOC extraction
+4. **attribution**: malware family, threat actor, campaign linkage
 
-Es ist zu berücksichtigen, dass jede forensische Analyse die Beweise kontaminiert. Aus diesem Grund werden die Beweise zunächst gesammelt und schreibgeschützt. Im Anschluss wird eine Kopie des schreibgeschützten Beweismaterials für die Analyse verwendet.
+## key forensic tools
+```bash
+# file analysis
+file malware.exe
+strings malware.exe | grep -i "http\|ftp\|\.dll"
+exiftool malware.exe
 
-Dieses Verfahren gewährleistet, dass die Originalbeweise während des Analyseprozesses nicht verunreinigt werden und ihre Integrität erhalten bleibt. Im Falle einer Beschädigung der zu untersuchenden Kopie besteht jederzeit die Möglichkeit, eine neue Kopie des aufbewahrten Beweismittels zu erstellen.
+# registry analysis  
+rip.pl -r /mnt/analysis/Windows/System32/config/SYSTEM -p userassist
+rip.pl -r /mnt/analysis/Windows/System32/config/SOFTWARE -p run
 
-***
+# network artifact analysis
+bulk_extractor -o /tmp/output /mnt/analysis/
+tshark -r capture.pcap -T fields -e ip.src -e ip.dst -e tcp.port
+```
 
-### Gewahrsamskette (Chain of custody)
+## incident response procedures
+### initial response (first 30 minutes)
+1. **identify scope**: affected systems, data, users
+2. **contain threat**: isolate systems, disable accounts  
+3. **preserve evidence**: memory dumps, disk images, logs
+4. **notify stakeholders**: management, legal, customers
+5. **begin documentation**: timeline, actions taken, evidence
 
-Ein weiterer essenzieller Aspekt, um die Integrität von Beweismitteln zu gewährleisten, ist die Verwahrkette. Im Rahmen der Beweisammlung ist eine adäquate Verwahrung der gesammelten Beweismittel zu gewährleisten, um deren Integrität und Authentizität zu bewahren.
+### investigation phase (hours to days)
+1. **analyze artifacts**: malware, logs, network traffic
+2. **determine root cause**: attack vector, vulnerability exploited
+3. **assess impact**: data exfiltrated, systems compromised
+4. **track attacker TTPs**: techniques, tools, procedures used
+5. **develop IOCs**: file hashes, domains, IP addresses
 
-Personen, die nicht mit den Ermittlungen in Verbindung stehen, ist es untersagt, in den Besitz der Beweismittel zu gelangen, da dies eine Beeinträchtigung der Beweiskette zur Folge hätte. Eine verunreinigte Beweiskette wirft Fragen hinsichtlich der Integrität der Daten auf und schwächt den konstruierten Fall, indem unbekannte Variablen hinzugefügt werden, die nicht gelöst werden können.
+### recovery phase (days to weeks)  
+1. **eradicate threats**: remove malware, close vulnerabilities
+2. **restore systems**: clean rebuilds, backup restoration
+3. **strengthen defenses**: new rules, monitoring, training
+4. **validate recovery**: testing, monitoring for reinfection
+5. **lessons learned**: incident review, process improvements
 
-Es sei angenommen, dass ein Festplatten-Image während des Transports von der Person, die es erstellt hat, zu der Person, die die Analyse durchführt, in den Besitz einer Person gelangt, die nicht über die erforderlichen Kenntnisse für den Umgang mit solchen Beweismitteln verfügt. In diesem Fall ist es nicht möglich, die Sicherheit zu gewährleisten, dass die Person das Beweismittel adäquat behandelt und es durch ihre Tätigkeit nicht kontaminiert hat.
+## chain of custody
+- document all evidence handling: who, what, when, where
+- use tamper-evident bags and labels
+- maintain access logs for all evidence
+- provide detailed transfer documentation
 
-***
+## common artifacts by OS
+### windows
+- prefetch files: recent program execution
+- registry hives: persistence, configuration, user activity
+- event logs: system events, security events, application logs
+- user profile data: browser history, recent documents, email
 
-### Reihenfolge der Flüchtigkeit (Order of volatility)
+### linux  
+- bash history: command execution history
+- log files: /var/log/* for system and application events  
+- cron jobs: scheduled task persistence
+- user artifacts: .ssh, .bash_profile, browser data
 
-Digitale Beweismittel sind in vielen Fällen flüchtig, was bedeutet, dass sie bei nicht rechtzeitiger Erfassung verloren gehen können. Ein Beispiel ist der Verlust von Daten im RAM-Speicher eines Computers, wenn das Gerät ausgeschaltet wird. Der RAM-Speicher speichert Daten nur, solange das Gerät eingeschaltet ist.
-
-Einige Quellen sind im Vergleich zu anderen als weniger flüchtig zu bewerten. Eine Festplatte fungiert als ein Speichermedium, welches eine hohe Speicherkapazität aufweist und Daten auch im Falle eines Stromausfalls konserviert. Daher ist eine Festplatte weniger flüchtig als ein RAM.
-
-Bei der Durchführung von DFIR ist es von entscheidender Bedeutung, die Reihenfolge der Flüchtigkeit der verschiedenen Beweisquellen zu verstehen, um sie entsprechend zu erfassen und zu sichern. In dem oben angeführten Beispiel ist es essenziell, den Arbeitsspeicher vor der Festplatte zu sichern, um einen Verlust von Daten im Arbeitsspeicher zu verhindern.
-
-***
-
-### Erstellung einer Zeitleiste (Timeline creation)
-
-Nach der Sammlung und Erhaltung der Artefakte ist es essenziell, diese verständlich darzustellen, um die darin enthaltenen Informationen vollständig nutzen zu können. Für eine effiziente und präzise Analyse ist die Erstellung einer Zeitleiste der Ereignisse unerlässlich.
-
-Die Darstellung sämtlicher Aktivitäten erfolgt in chronologischer Reihenfolge. Diese Tätigkeit wird als Erstellung einer Zeitleiste bezeichnet. Die Erstellung eines Zeitstrahls ist ein wesentlicher Aspekt der Untersuchung, da sie der Analyse eine klare Perspektive bietet und die Integration von Informationen aus diversen Quellen ermöglicht.
-
-Dies ist von entscheidender Bedeutung für die Entwicklung einer umfassenden Dokumentation über den Ablauf der Ereignisse.
-
-***
-
-### Prozessschritte für den Incident Response
-
-Je nach Organisation werden die Schritte unterschiedliche definiert.\
-Unter SANS werden die Schritte noch einmal ausführlich erklärt.
-
-{% tabs %}
-{% tab title="NIST (nist.gov)" %}
-1. Vorbereitung
-2. Erkennung und Analyse
-3. Eindämmung, Ausrottung und Wiederherstellung
-4. Aktivitäten nach einem Vorfall
-{% endtab %}
-
-{% tab title="SANS (sans.org)" %}
-Die folgenden Schritte werden auch oft unter dem Acronym PICERL zusammengefasst/ genannt.
-
-1. **P**reparation (Vorbereitung)\
-   Bevor es zu einem Zwischenfall kommt, müssen Vorbereitungen getroffen werden, damit alle für den Fall eines Zwischenfalls gerüstet sind. Zur Vorbereitung gehört, dass die erforderlichen Mitarbeiter, Verfahren und Technologien vorhanden sind, um Vorfälle zu verhindern und darauf zu reagieren.
-2. **I**dentification (Kennzeichnung / Identifizierung)\
-   In der Identifizierungsphase wird ein Vorfall anhand einiger Indikatoren erkannt. Diese Indikatoren werden dann auf False Positives hin analysiert, dokumentiert und an die zuständigen Akteure weitergeleitet.
-3. **C**ontainment (Eindämmung)\
-   In dieser Phase wird der Vorfall eingedämmt, und es werden Anstrengungen unternommen, um seine Auswirkungen zu begrenzen. Auf der Grundlage der forensischen Analyse des Vorfalls, die Teil dieser Phase ist, können kurz- und langfristige Maßnahmen zur Eindämmung der Bedrohung ergriffen werden.
-4. **E**radication (Ausrottung)\
-   Anschließend wird die Bedrohung aus dem Netz entfernt. Es muss sichergestellt werden, dass eine ordnungsgemäße forensische Analyse durchgeführt und die Bedrohung vor der Ausrottung wirksam eingedämmt wird. Wenn beispielsweise der Eintrittspunkt des Bedrohungsakteurs in das Netzwerk nicht entfernt wird, kann die Bedrohung nicht wirksam beseitigt werden, und der Akteur kann wieder Fuß fassen.
-5. **R**ecovery (Wiederherstellung)\
-   Sobald die Bedrohung aus dem Netz entfernt ist, werden die unterbrochenen Dienste wieder so hergestellt, wie sie vor dem Vorfall waren.
-6. **L**essons learned (Aufzeichnung / Diskussion des Gelernten)\
-   Abschließend wird der Vorfall überprüft, dokumentiert und auf der Grundlage der Erkenntnisse aus dem Vorfall werden Maßnahmen ergriffen, um sicherzustellen, dass das Team auf den nächsten Vorfall besser vorbereitet ist.
-{% endtab %}
-{% endtabs %}
-
-
-
-### Forensik Cheatsheets
-
-Linux: [linux-forensik.md](../../../cheat-sheets/linux-forensik.md "mention")
-
-Windows: [powershell.md](../../../cheat-sheets/powershell.md "mention")
-
-Handbücher für Incident Handler:&#x20;
-
-* [https://www.sans.org/white-papers/33901/](https://www.sans.org/white-papers/33901/)&#x20;
-* [https://sansorg.egnyte.com/dl/SzUc95nE0x](https://sansorg.egnyte.com/dl/SzUc95nE0x)
-* [https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-61r2.pdf](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-61r2.pdf)
-
+[!] collect volatile evidence first - memory contents lost on reboot
+(._.) maintain detailed documentation - required for legal proceedings

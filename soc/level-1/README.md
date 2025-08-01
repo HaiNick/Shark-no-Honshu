@@ -1,44 +1,51 @@
-# Level 1
+# level 1 SOC analyst - first line alert triage and basic incident response.
 
-Ein Security Operations Center (SOC) Analyst ist die erste Verteidigungslinie in einem Sicherheitsüberwachungsteam. Die Aufgabe von L1 SOC Analysts besteht darin, sicherheitsrelevante Ereignisse zu identifizieren, zu überwachen und erste Bewertungen vorzunehmen. Im Rahmen ihrer Tätigkeit setzen sie verschiedene Sicherheitstools und -plattformen ein, um potenzielle Bedrohungen frühzeitig zu erkennen und diese gemäß festgelegter Prozesse an die zuständigen Eskalationsstufen weiterzuleiten. Ihre Rolle ist von entscheidender Bedeutung für eine schnelle Reaktion auf Sicherheitsvorfälle und das tägliche Monitoring der IT-Infrastruktur eines Unternehmens.
+## primary responsibilities
+- monitor SIEM dashboards for security alerts
+- triage incidents: validate, categorize, prioritize
+- basic investigation: gather initial evidence
+- escalate complex threats to level 2 analysts
+- document findings in ticketing system
 
-**Typische Aufgaben:**
+## essential skills
+- log analysis: recognize attack patterns in events
+- network basics: understand protocols, traffic flow
+- windows/linux fundamentals: processes, files, registry
+- incident handling: follow established playbooks
+- communication: clear reporting to stakeholders
 
-* Überwachung von Sicherheitsalarmen und -ereignissen (z. B. über SIEM-Systeme)
-* Erste Analyse und Kategorisierung von Vorfällen
-* Eskalation an L2/L3-Analysten bei komplexeren Bedrohungen
-* Dokumentation von Vorfällen und Reaktionen
-* Durchführung einfacher Maßnahmen zur Bedrohungsabwehr (z. B. Isolierung infizierter Systeme)
+## core tools
+```bash
+# SIEM platforms
+splunk, elastic, qradar, sentinel
 
-**Verwendete Tools und Plattformen:**
+# endpoint detection
+crowdstrike falcon, sentinelone, windows defender
 
-* SIEM-Systeme (z. B. Splunk, IBM QRadar, Azure Sentinel)
-* Endpoint Detection and Response (EDR)-Lösungen
-* Ticketing- und Incident-Management-Systeme
-* Threat Intelligence Plattformen
-* Firewalls, IDS/IPS-Systeme
+# network analysis  
+wireshark, zeek logs, netflow data
 
-**Erforderliche Fähigkeiten:**
+# threat intelligence
+virustotal, misp feeds, abuse.ch
 
-* Grundkenntnisse in Netzwerksicherheit und IT-Systemen
-* Vertrautheit mit Log-Analyse
-* Fähigkeit zur schnellen Einschätzung von Sicherheitsereignissen
-* Teamarbeit und klare Kommunikation
-* Bereitschaft zur Schichtarbeit (häufig 24/7-Betrieb)
+# ticketing systems
+servicenow, jira, remedy
+```
 
+## investigation process
+1. **validate alert**: check for false positive indicators
+2. **gather context**: affected systems, users, timeframe  
+3. **assess impact**: data, systems, business operations
+4. **contain threat**: isolate systems if needed
+5. **document findings**: who, what, when, where, why
+6. **escalate or close**: based on complexity and impact
 
+## escalation criteria
+- malware confirmed on critical systems
+- evidence of data exfiltration  
+- lateral movement detected
+- unknown attack techniques
+- business-critical systems affected
 
-Zur Identifikation und Erhöhung der Visibilität sollten folgende Systeme/Methoden implementiert sein:
-
-*   **Assets & Identities** (Identity Inventory, Asset Inventory, Netzwerkdiagramme, Work-/Run-/Playbooks zur Definition von Schritten):
-
-    Workbooks – auch als Playbooks, Runbooks oder Workflows bezeichnet – sind strukturierte Dokumente, die klar definieren, welche Schritte zur Untersuchung und Behebung bestimmter Bedrohungen notwendig sind. Da L1 SOC Analysts als Junior-Fachkräfte gelten und nicht jedes Angriffsszenario perfekt einschätzen müssen, werden diese Anleitungen in der Regel von erfahrenen Analysten erstellt. L1-Analysten sollen – und müssen mitunter – Sicherheitsalarme strikt gemäß diesen Vorgaben bearbeiten, um Fehler zu vermeiden und eine effiziente, konsistente Analyse sicherzustellen.
-*   Reporting
-
-    Folgende Punkte sollten mindestens enthalten sein:
-
-    * **Who (Wer):** Welcher Benutzer hat sich angemeldet, einen Befehl ausgeführt oder eine Datei heruntergeladen?
-    * **What (Was):** Welche genaue Handlung oder Abfolge von Ereignissen wurde durchgeführt?
-    * **When (Wann):** Wann genau begann und endete die verdächtige Aktivität?
-    * **Where (Wo):** Welches Gerät, welche IP-Adresse oder welche Website war an dem Alarm beteiligt?
-    * **Why (Warum):** Der wichtigste Punkt – die Begründung für die abschließende Bewertung des Vorfalls.
+[!] follow playbooks exactly - document deviations and rationale
+(._.) when in doubt, escalate - better safe than sorry

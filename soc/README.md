@@ -1,7 +1,40 @@
-# SOC
+# security operations center - 24/7 threat monitoring and incident response.
 
-<figure><img src="https://tryhackme-images.s3.amazonaws.com/user-uploads/5fc2847e1bbebc03aa89fbf2/room-content/e2b97e6d9224da98764e21085190e54e.png" alt=""><figcaption><p>Umfang eines SOC</p></figcaption></figure>
+## core functions
+- monitor security alerts from SIEM, EDR, network tools
+- analyze incidents: triage, investigate, escalate
+- threat hunting: proactive search for hidden threats  
+- incident response: contain, eradicate, recover
+- forensics: collect evidence, timeline reconstruction
 
+## analyst tiers
+- **level 1**: alert triage, basic investigation, escalation
+- **level 2**: deep analysis, threat hunting, playbook creation
+- **level 3**: advanced forensics, malware analysis, architecture
 
+## essential tools
+```bash
+# SIEM platforms
+splunk, elk stack, qradar, sentinel
 
-<figure><img src="https://tryhackme-images.s3.amazonaws.com/user-uploads/5fc2847e1bbebc03aa89fbf2/room-content/7bf731bb9c58b0e9172a4788b761ad37.png" alt=""><figcaption><p>Arbeitsbereiche der Security Analysten (Tier 1 -> Tier 3)</p></figcaption></figure>
+# endpoint detection  
+crowdstrike, sentinelone, defender ATP
+
+# network monitoring
+zeek, suricata, wireshark, networkminer
+
+# threat intelligence
+misp, opencti, virustotal, threatconnect
+
+# forensics & IR
+volatility, autopsy, sleuthkit, yara
+```
+
+## operational procedures
+- playbooks for common attack scenarios
+- escalation matrix: when to involve L2/L3/management
+- evidence handling: chain of custody, preservation
+- communication protocols: internal teams, external stakeholders
+
+[!] SOC effectiveness depends on quality of detection rules and analyst training
+(._.) alert fatigue from false positives reduces response effectiveness
