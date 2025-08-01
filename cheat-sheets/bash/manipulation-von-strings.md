@@ -1,122 +1,161 @@
-# Manipulation von Strings
+# extract and manipulate text with unix tools. example: parse command output, clean data, extract fields because regex is hard to remember
 
-### 1. **Grundlegende Extraktion**
-
-| Tool      | Befehl                   | Beschreibung                            |
-| --------- | ------------------------ | --------------------------------------- |
-| `grep`    | `grep 'pattern' file`    | Zeilen mit "pattern" anzeigen           |
-| `grep -o` | `grep -o 'pattern' file` | Nur den Treffer ausgeben                |
-| `cut`     | `cut -d':' -f2`          | Nach Trennzeichen (z. B. `:`) aufteilen |
-| `awk`     | `awk '{print $2}'`       | Spalte extrahieren                      |
-| `sed`     | `sed 's/abc/xyz/'`       | Text ersetzen (einmal pro Zeile)        |
-| `sed`     | `sed 's/.*: //'`         | Alles bis zum letzten `:` entfernen     |
-
-***
-
-### 2. **Fortgeschrittene Extraktion**
-
-| Tool         | Befehl                                       | Beschreibung                      |
-| ------------ | -------------------------------------------- | --------------------------------- |
-| `awk -F ':'` | `awk -F ':' '{print $2}'`                    | Benutzerdefiniertes Trennzeichen  |
-| `grep -P`    | `grep -Po '(?<=Name: ).*'`                   | Perl-regex Lookbehind             |
-| `sed -n`     | `sed -n 's/^Name: //p'`                      | Nur Zeilen mit „Name:“ bearbeiten |
-| `perl`       | `perl -ne 'print "$1\n" if /Name:\s*(\S+)/'` | Regex-Match mit Perl              |
-
-***
-
-### 3. **Strings kürzen oder trennen**
-
-| Tool                             | Befehl                      | Beschreibung |
-| -------------------------------- | --------------------------- | ------------ |
-| `cut -c1-5`                      | Gibt die ersten 5 Zeichen   |              |
-| `cut -d' ' -f1`                  | Erstes Wort in einer Zeile  |              |
-| `awk '{print substr($0, 1, 5)}'` | Zeichenpositionen mit `awk` |              |
-| `rev`                            | Dreht Zeichenfolge um       |              |
-| `head -c N`                      | Gibt die ersten N Zeichen   |              |
-| `tail -c N`                      | Gibt die letzten N Zeichen  |              |
-
-***
-
-### 4. **Ersetzen & Umwandeln**
-
-| Tool                               | Befehl                                 | Beschreibung |
-| ---------------------------------- | -------------------------------------- | ------------ |
-| `tr 'a-z' 'A-Z'`                   | Kleinschreibung → Großschreibung       |              |
-| `tr -d '\r'`                       | Entferne Steuerzeichen                 |              |
-| `sed 's/foo/bar/g'`                | Alle „foo“ durch „bar“ ersetzen        |              |
-| `awk '{gsub("foo","bar"); print}'` | Global ersetzen in `awk`               |              |
-| `perl -pe 's/foo/bar/g'`           | Sehr flexibel mit regulären Ausdrücken |              |
-
-***
-
-### 5. **Filtern & Bedingte Verarbeitung**
-
-| Tool                               | Befehl                           | Beschreibung |
-| ---------------------------------- | -------------------------------- | ------------ |
-| `grep '^Name:'`                    | Zeilen, die mit "Name:" beginnen |              |
-| `awk '/admin/ {print $2}'`         | Nur Zeilen mit "admin"           |              |
-| `awk '$3 == "enabled" {print $1}'` | Bedingte Ausgabe                 |              |
-| `sed -n '/error/ p'`               | Nur Zeilen mit "error" anzeigen  |              |
-
-***
-
-### 6. **Zusammenfügen, Kombinieren, Erweitern**
-
-| Tool                      | Befehl                              | Beschreibung |
-| ------------------------- | ----------------------------------- | ------------ |
-| `paste file1 file2`       | Dateien spaltenweise zusammenführen |              |
-| `awk '{print $1 "-" $2}'` | Felder kombinieren                  |              |
-| `xargs`                   | Übergibt Inhalte an andere Befehle  |              |
-| `jq`                      | JSON zerlegen und manipulieren      |              |
-
-***
-
-### 7. **Spezial: Leerzeichen, Zeilen, Zeichen trimmen**
-
-| Tool                            | Befehl                                      | Beschreibung |
-| ------------------------------- | ------------------------------------------- | ------------ |
-| `xargs`                         | Entfernt führende/nachgestellte Leerzeichen |              |
-| `awk '{$1=$1; print}'`          | Entfernt doppelte Leerzeichen               |              |
-| `sed 's/^[ \t]*//;s/[ \t]*$//'` | Trimmt vorne/hinten                         |              |
-| `tr -s ' '`                     | Ersetzt mehrere Leerzeichen durch eines     |              |
-
-***
-
-### 8. **Komplexere Operationen (Kombiniert)**
-
+## basic text extraction
 ```bash
-# Nur Namen extrahieren, Leerzeichen entfernen, sortieren
-cat res.txt | grep 'sAMAccountName' | cut -d' ' -f2 | tr -d ' ' | sort | uniq
+# grep - find and extract patterns
+grep 'pattern' file.txt        # lines containing pattern
+grep -o 'pattern' file.txt     # only the matching text
+grep -v 'pattern' file.txt     # lines NOT containing pattern
+grep -i 'pattern' file.txt     # case insensitive
+grep -E 'reg(ex|exp)' file.txt # extended regex
+grep -P '(?<=Name: ).*' file.txt  # perl regex with lookbehind
+
+# cut - extract columns/fields
+cut -d':' -f2 file.txt         # 2nd field, colon delimiter
+cut -c1-5 file.txt             # characters 1-5
+cut -d' ' -f1 file.txt         # first word per line
+cut -d',' -f2,4 file.txt       # fields 2 and 4
 ```
 
+## advanced text processing
 ```bash
-# Nur Werte mit bestimmten Bedingungen extrahieren
-awk -F': ' '/sAMAccountName/ && $2 ~ /^[A-Za-z]+$/ {print $2}' res.txt
+# awk - powerful field processor
+awk '{print $2}' file.txt      # print 2nd column
+awk -F':' '{print $2}' file.txt  # custom field separator
+awk '/pattern/ {print $1}' file.txt  # print field 1 where pattern matches
+awk '{gsub(/old/, "new"); print}' file.txt  # global search/replace
+awk 'NR==5 {print}' file.txt   # print line 5 only
+awk '{$1=$1; print}' file.txt  # normalize whitespace
+
+# sed - stream editor
+sed 's/abc/xyz/' file.txt      # replace first abc with xyz per line
+sed 's/abc/xyz/g' file.txt     # replace all abc with xyz
+sed 's/.*: //' file.txt        # remove everything up to last colon
+sed -n 's/^Name: //p' file.txt # print only lines starting with "Name:"
+sed '5d' file.txt              # delete line 5
+sed '1,5d' file.txt            # delete lines 1-5
 ```
 
+## string manipulation
 ```bash
-# JSON-Felder extrahieren
-cat data.json | jq '.users[].name'
+# tr - translate/replace characters
+tr 'a-z' 'A-Z' < file.txt     # convert to uppercase
+tr -d '\r' < file.txt          # remove carriage returns
+tr -s ' ' < file.txt           # squeeze multiple spaces to one
+tr ';' '\n' < file.txt         # replace semicolons with newlines
+tr -d '[:punct:]' < file.txt   # remove punctuation
+
+# character/substring extraction
+head -c 10 file.txt            # first 10 characters
+tail -c 10 file.txt            # last 10 characters
+rev file.txt                   # reverse each line
 ```
 
-***
-
-### 9. **Beispiele für typische Aufgaben**
-
-#### ✅ Nur Benutzernamen extrahieren:
-
+## combining and formatting
 ```bash
-grep sAMAccountName res.txt | cut -d' ' -f2
+# paste - merge files side by side
+paste file1.txt file2.txt      # combine files column-wise
+paste -d',' file1.txt file2.txt # use comma as delimiter
+
+# column formatting
+column -t file.txt             # format as table
+column -t -s',' file.txt       # csv to table
+
+# join files on common field
+join file1.txt file2.txt       # join on first field
+join -t':' -1 2 -2 1 file1.txt file2.txt  # custom delimiter and fields
 ```
 
-#### ✅ Alle Werte nach dem letzten `:` extrahieren:
-
+## pattern matching and extraction
 ```bash
-sed 's/.*: //'
+# perl one-liners for complex patterns
+perl -ne 'print "$1\n" if /Name:\s*(\S+)/' file.txt  # extract after "Name:"
+perl -pe 's/foo/bar/g' file.txt    # global replace
+perl -ne 'print if /start/..!/end/' file.txt  # print between patterns
+
+# bash parameter expansion
+echo ${var##*/}                # remove everything up to last /
+echo ${var%%.*}                # remove everything after first .
+echo ${var//old/new}           # replace all occurrences
+echo ${var:5:10}               # substring from position 5, length 10
 ```
 
-#### ✅ Nur Buchstaben extrahieren (keine Zahlen oder Sonderzeichen):
-
+## whitespace and line handling
 ```bash
-sed 's/[^a-zA-Z]//g'
+# clean up whitespace
+xargs < file.txt               # remove leading/trailing whitespace
+awk '{$1=$1; print}' file.txt  # remove extra whitespace
+sed 's/^[ \t]*//;s/[ \t]*$//' file.txt  # trim leading/trailing
+
+# line operations
+sort file.txt                  # sort lines
+sort -u file.txt               # sort and remove duplicates
+uniq file.txt                  # remove consecutive duplicates
+wc -l file.txt                 # count lines
+nl file.txt                    # number lines
 ```
+
+## json and structured data
+```bash
+# jq for json processing
+jq '.users[].name' data.json   # extract name field from users array
+jq -r '.key' data.json         # raw output (no quotes)
+jq '.[] | select(.status == "active")' data.json  # filter objects
+
+# xml processing with xmlstarlet
+xmlstarlet sel -t -v "//name" file.xml  # extract name elements
+```
+
+## practical examples
+```bash
+# extract usernames from ldap output
+grep sAMAccountName output.txt | cut -d' ' -f2 | tr -d ' ' | sort -u
+
+# clean up csv data
+sed 's/"//g' data.csv | cut -d',' -f2 | sort | uniq
+
+# extract ip addresses from logs
+grep -oE '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' access.log
+
+# get only alphabetic characters
+sed 's/[^a-zA-Z]//g' file.txt
+
+# extract everything after last colon
+sed 's/.*: //' file.txt
+
+# extract domain from email addresses
+sed 's/.*@//' emails.txt
+
+# convert windows line endings
+tr -d '\r' < windows.txt > unix.txt
+
+# extract fields from ps output
+ps aux | awk '{print $2, $11}'  # pid and command
+```
+
+## quick data processing chains
+```bash
+# common pipeline patterns
+cat file | grep pattern | cut -d' ' -f2 | sort | uniq
+ps aux | grep -v grep | awk '{print $2}' | xargs kill
+netstat -an | grep LISTEN | awk '{print $4}' | cut -d':' -f2 | sort -u
+find . -name "*.log" | xargs grep ERROR | cut -d':' -f1 | sort -u
+```
+
+## (._.) common gotchas
+```bash
+# field separators matter
+awk -F: '{print $2}'           # use -F for field separator
+cut -d: -f2                    # use -d for delimiter
+
+# regex flavors differ
+grep -E 'regex'                # extended regex for grep
+grep -P 'regex'                # perl regex for grep
+sed -E 's/regex/replace/'      # extended regex for sed (or -r on linux)
+
+# quote your variables
+grep "$pattern" file           # quote variables with spaces
+awk -v var="$value" '{print var}'  # pass shell variables to awk
+```
+
+# TODO: add csv processing, xml parsing, binary data extraction, encoding conversions

